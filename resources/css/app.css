@@ -1,0 +1,195 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+@source '../../app/Livewire/**/*.php';
+
+/* Theme is toggled by a `dark` class on <html>, not by prefers-color-scheme
+   alone, so the switcher can override the OS. The switcher seeds the class
+   from localStorage before first paint; see layouts/app.blade.php. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+   Brand constants
+   Lifted verbatim from amanelle.store's stylesheet. These do not change
+   between themes — they are the brand, not the surface it sits on.
+   --------------------------------------------------------------------------- */
+:root {
+    --brand-gold: #c9a96e;
+    --brand-gold-light: #e8d5a3;
+    --brand-gold-dark: #8c6a3a;
+    --brand-cream: #faf7f2;
+    --brand-black: #0d0b09;
+
+    /* Drawn from the product photography on @amanelle_beauty — the body
+       mists, the ASSAF Lady Collection cartons, the Anua pads. Light mode
+       goes flat if gold is the only accent against imagery this warm. */
+    --brand-blush: #f2c6ce;
+    --brand-rose-gold: #dcae96;
+
+    /* Foundation and concealer swatches. Kept off the gold ramp entirely:
+       skin tones read as mud when they sit next to it. Rendered only on a
+       --surface-2 plate that isolates them. */
+    --skin-100: #f6e3d5;
+    --skin-200: #e8c4a8;
+    --skin-300: #c99873;
+    --skin-400: #96613f;
+    --skin-500: #5c3823;
+    --skin-600: #33201a;
+}
+
+/* ---------------------------------------------------------------------------
+   Light — the world of the Instagram feed: warm, high-key, product-forward
+   --------------------------------------------------------------------------- */
+:root {
+    --surface: #faf7f2;
+    --surface-2: #f2ece1;
+    --surface-3: #e7ded0;
+    --ink: #1a1612;
+    --ink-muted: #6b5c47;
+
+    /* Gold at #c9a96e is 2.2:1 on cream and fails AA for text, so light mode
+       uses the dark gold for anything readable and keeps #c9a96e for fills,
+       rules and swatch rings where contrast rules do not bind. */
+    --accent: #8c6a3a;
+    --accent-fill: #c9a96e;
+    --accent-soft: #e8d5a3;
+
+    --hairline: rgb(26 22 18 / 0.12);
+    --overlay: rgb(26 22 18 / 0.45);
+}
+
+/* ---------------------------------------------------------------------------
+   Dark — the world of amanelle.store: near-black, gold, ceremonial
+   --------------------------------------------------------------------------- */
+.dark {
+    --surface: #0d0b09;
+    --surface-2: #1a1612;
+    --surface-3: #252018;
+    --ink: #faf7f2;
+    --ink-muted: #9e8e7a;
+
+    --accent: #c9a96e;
+    --accent-fill: #c9a96e;
+    --accent-soft: #e8d5a3;
+
+    --hairline: rgb(250 247 242 / 0.14);
+    --overlay: rgb(13 11 9 / 0.6);
+}
+
+/* ---------------------------------------------------------------------------
+   Tailwind wiring
+   `inline` makes the utilities resolve to the live custom property, so
+   bg-surface / text-ink follow the theme instead of baking in one value.
+   --------------------------------------------------------------------------- */
+@theme inline {
+    --color-surface: var(--surface);
+    --color-surface-2: var(--surface-2);
+    --color-surface-3: var(--surface-3);
+    --color-ink: var(--ink);
+    --color-ink-muted: var(--ink-muted);
+    --color-accent: var(--accent);
+    --color-accent-fill: var(--accent-fill);
+    --color-accent-soft: var(--accent-soft);
+    --color-hairline: var(--hairline);
+
+    --color-blush: var(--brand-blush);
+    --color-rose-gold: var(--brand-rose-gold);
+
+    --color-skin-100: var(--skin-100);
+    --color-skin-200: var(--skin-200);
+    --color-skin-300: var(--skin-300);
+    --color-skin-400: var(--skin-400);
+    --color-skin-500: var(--skin-500);
+    --color-skin-600: var(--skin-600);
+}
+
+@theme {
+    /* Latin faces are the ones amanelle.store already loads. Arabic is paired
+       structurally rather than by mood: Amiri is a high-contrast Naskh, so it
+       holds the wordmark's weight the way Cormorant does; Cairo matches
+       Montserrat's even geometry at UI sizes. */
+    --font-display: 'Cormorant Garamond', 'Amiri', ui-serif, Georgia, serif;
+    --font-sans: 'Montserrat', 'Cairo', ui-sans-serif, system-ui, sans-serif;
+
+    --text-2xs: 0.75rem;
+    --text-xs: 0.8125rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.25rem;
+    --text-xl: 1.75rem;
+    --text-2xl: 2.5rem;
+    --text-3xl: 4rem;
+
+    --tracking-wordmark: 0.25em;
+    --tracking-eyebrow: 0.18em;
+}
+
+@layer base {
+    html {
+        background-color: var(--surface);
+        color: var(--ink);
+    }
+
+    body {
+        font-family: var(--font-sans);
+        font-weight: 400;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Naskh needs more leading than Latin at the same optical size, and the
+       Latin faces are not loaded for Arabic at all — Cormorant has no Arabic
+       coverage, so leaving it first in the stack would silently fall back. */
+    [dir='rtl'] body {
+        font-family: 'Cairo', 'Tajawal', ui-sans-serif, system-ui, sans-serif;
+        line-height: 1.9;
+    }
+
+    [dir='rtl'] .font-display,
+    [dir='rtl'] h1,
+    [dir='rtl'] h2,
+    [dir='rtl'] h3 {
+        font-family: 'Amiri', 'Cormorant Garamond', ui-serif, serif;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--accent-fill);
+        outline-offset: 2px;
+    }
+
+    ::selection {
+        background-color: var(--accent-fill);
+        color: var(--brand-black);
+    }
+}
+
+@layer components {
+    /* The wordmark's wide tracking pushes a trailing gap on the last letter,
+       which visually de-centres it. Only correct on the side the gap lands on,
+       so the fix survives a direction flip. */
+    .wordmark {
+        font-family: var(--font-display);
+        letter-spacing: var(--tracking-wordmark);
+        margin-inline-end: calc(var(--tracking-wordmark) * -1);
+    }
+
+    .eyebrow {
+        font-size: var(--text-2xs);
+        letter-spacing: var(--tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--ink-muted);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

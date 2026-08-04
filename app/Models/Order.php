@@ -16,6 +16,7 @@ class Order extends Model
         return [
             'subtotal' => 'decimal:2',
             'shipping_total' => 'decimal:2',
+            'discount_total' => 'decimal:2',
             'total' => 'decimal:2',
             'display_rate' => 'decimal:6',
             'placed_at' => 'datetime',

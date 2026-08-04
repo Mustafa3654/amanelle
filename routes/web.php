@@ -74,6 +74,18 @@ Route::post('/contact', function (Request $request) {
     return back()->with('status', __('Thanks — we will get back to you shortly.'));
 })->name('contact.send');
 
+/**
+ * Admin language toggle. A GET because it hangs off Filament's user menu,
+ * which renders links rather than forms.
+ */
+Route::get('/admin/locale', function (Request $request) {
+    $next = app()->getLocale() === 'ar' ? 'en' : 'ar';
+
+    $request->session()->put('locale', $next);
+
+    return back();
+})->middleware(['web', 'auth'])->name('admin.locale.switch');
+
 Route::post('/currency', function (Request $request) {
     $code = $request->string('currency')->toString();
 

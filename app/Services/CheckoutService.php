@@ -40,6 +40,11 @@ class CheckoutService
         return DB::transaction(function () use ($lines, $details, $displayCurrency) {
             $subtotal = (float) $lines->sum('line_total');
 
+            // Re-resolved here rather than trusting anything the checkout form
+            // sent, so a code cannot be replayed after it expires or sells out.
+            $promo = $this->cart->promo();
+            $discount = $promo?->discountFor($subtotal) ?? 0.0;
+
             $order = Order::create([
                 'number' => Order::nextNumber(),
                 'customer_name' => $details['customer_name'],
@@ -51,7 +56,10 @@ class CheckoutService
                 'status' => 'pending',
                 'subtotal' => $subtotal,
                 'shipping_total' => 0,
-                'total' => $subtotal,
+                'promo_code' => $promo?->code,
+                'promo_code_id' => $promo?->id,
+                'discount_total' => $discount,
+                'total' => round($subtotal - $discount, 2),
 
                 // Snapshot what the customer was actually looking at. The LBP
                 // rate moves, and an old order must not re-price itself when
@@ -81,6 +89,12 @@ class CheckoutService
             // Reserves stock atomically. Throws if anything is short, which
             // rolls the order back with it.
             $this->stock->reserveFor($order->load('items'));
+
+            // Incremented atomically so two people redeeming the last use of a
+            // limited code cannot both get through.
+            if ($promo) {
+                $promo->increment('used_count');
+            }
 
             $this->cart->clear();
 

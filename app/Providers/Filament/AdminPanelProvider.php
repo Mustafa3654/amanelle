@@ -10,8 +10,6 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -36,10 +34,19 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
             ])
+            ->brandName('Amanelle')
+            // Widgets are discovered from app/Filament/Widgets only. Filament's
+            // own account and branding panels are dropped — this dashboard is
+            // for running a shop, not advertising the framework.
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+            ->userMenuItems([
+                // Flips the panel between Arabic and English. Filament reads
+                // the app locale, so this is the same session key the
+                // storefront switcher uses.
+                'locale' => \Filament\Navigation\MenuItem::make()
+                    ->label(fn () => app()->getLocale() === 'ar' ? 'English' : 'العربية')
+                    ->url(fn () => route('admin.locale.switch'))
+                    ->icon('heroicon-o-language'),
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -51,6 +58,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \App\Http\Middleware\SetLocale::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

@@ -22,6 +22,32 @@ new class extends Component
 
     public string $stockError = '';
 
+    public string $promo = '';
+
+    public string $promoMessage = '';
+
+    public bool $promoFailed = false;
+
+    public function applyPromo(): void
+    {
+        $result = app(CartService::class)->applyPromo($this->promo);
+
+        $this->promoMessage = $result['message'];
+        $this->promoFailed = ! $result['ok'];
+
+        if ($result['ok']) {
+            $this->promo = '';
+        }
+    }
+
+    public function removePromo(): void
+    {
+        app(CartService::class)->removePromo();
+
+        $this->promoMessage = '';
+        $this->promoFailed = false;
+    }
+
     protected function rules(): array
     {
         return [
@@ -62,6 +88,9 @@ new class extends Component
         return [
             'lines' => $cart->lines(),
             'subtotal' => $cart->subtotal(),
+            'discount' => $cart->discount(),
+            'total' => $cart->total(),
+            'appliedPromo' => $cart->promo(),
         ];
     }
 };
@@ -166,10 +195,60 @@ new class extends Component
                     @endforeach
                 </ul>
 
-                <div class="mt-5 flex justify-between border-t border-hairline pt-4">
-                    <span class="eyebrow">{{ __('Total') }}</span>
-                    <span class="text-lg text-accent">{{ Money::format($subtotal) }}</span>
+                {{-- Promo sits in the summary, next to the number it changes,
+                     rather than buried in the delivery form. --}}
+                <div class="mt-5 border-t border-hairline pt-4">
+                    @if ($appliedPromo)
+                        <div class="flex items-center justify-between gap-2 rounded-lg border border-accent-fill/30 px-3 py-2">
+                            <span class="min-w-0 text-xs">
+                                <span class="font-semibold text-accent">{{ $appliedPromo->code }}</span>
+                                <span class="text-ink-muted">−{{ $appliedPromo->label() }}</span>
+                            </span>
+                            <button type="button" wire:click="removePromo"
+                                    class="shrink-0 text-xs text-ink-muted underline hover:text-accent">
+                                {{ __('Remove') }}
+                            </button>
+                        </div>
+                    @else
+                        <label for="promo" class="eyebrow block">{{ __('Promo code') }}</label>
+                        <div class="mt-2 flex gap-2">
+                            <input id="promo" wire:model="promo" wire:keydown.enter.prevent="applyPromo"
+                                   type="text" dir="ltr" placeholder="{{ __('Enter code') }}"
+                                   class="min-w-0 flex-1 rounded-lg border border-hairline bg-surface px-3 py-2.5
+                                          text-sm uppercase outline-none focus:border-accent-fill">
+                            <button type="button" wire:click="applyPromo"
+                                    class="shrink-0 rounded-lg border border-accent-fill/40 px-4 text-xs
+                                           font-semibold uppercase tracking-wider text-accent hover:bg-accent-fill/10">
+                                {{ __('Apply') }}
+                            </button>
+                        </div>
+                    @endif
+
+                    @if ($promoMessage)
+                        <p @class(['mt-2 text-xs', 'text-red-400' => $promoFailed, 'text-accent' => ! $promoFailed])>
+                            {{ $promoMessage }}
+                        </p>
+                    @endif
                 </div>
+
+                <dl class="mt-5 space-y-2 border-t border-hairline pt-4 text-sm">
+                    <div class="flex justify-between">
+                        <dt class="text-ink-muted">{{ __('Subtotal') }}</dt>
+                        <dd>{{ Money::format($subtotal) }}</dd>
+                    </div>
+
+                    @if ($discount > 0)
+                        <div class="flex justify-between text-accent">
+                            <dt>{{ __('Discount') }}</dt>
+                            <dd>−{{ Money::format($discount) }}</dd>
+                        </div>
+                    @endif
+
+                    <div class="flex justify-between border-t border-hairline pt-3">
+                        <dt class="eyebrow">{{ __('Total') }}</dt>
+                        <dd class="text-lg text-accent">{{ Money::format($total) }}</dd>
+                    </div>
+                </dl>
             </aside>
         </div>
     @endif

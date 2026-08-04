@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ProductVariant;
+use App\Models\PromoCode;
 use Illuminate\Support\Collection;
 
 /**
@@ -121,6 +122,7 @@ class CartService
     public function clear(): void
     {
         $this->write([]);
+        $this->removePromo();
     }
 
     public function count(): int
@@ -131,6 +133,60 @@ class CartService
     public function subtotal(): float
     {
         return (float) $this->lines()->sum('line_total');
+    }
+
+    public const PROMO_KEY = 'promo_code';
+
+    /**
+     * Re-resolved from the database on every read, never trusted from the
+     * session. Only the code string is stored, so a promo that expires or is
+     * switched off stops applying immediately — including on carts that were
+     * already open when it changed.
+     */
+    public function promo(): ?PromoCode
+    {
+        $code = session(self::PROMO_KEY);
+
+        if (! $code) {
+            return null;
+        }
+
+        $promo = PromoCode::usable()->where('code', strtoupper($code))->first();
+
+        return $promo?->rejectionReason($this->subtotal()) === null ? $promo : null;
+    }
+
+    /** @return array{ok: bool, message: string} */
+    public function applyPromo(string $code): array
+    {
+        $promo = PromoCode::where('code', strtoupper(trim($code)))->first();
+
+        if (! $promo) {
+            return ['ok' => false, 'message' => __('We do not recognise that code.')];
+        }
+
+        if ($reason = $promo->rejectionReason($this->subtotal())) {
+            return ['ok' => false, 'message' => $reason];
+        }
+
+        session()->put(self::PROMO_KEY, $promo->code);
+
+        return ['ok' => true, 'message' => __(':code applied', ['code' => $promo->code])];
+    }
+
+    public function removePromo(): void
+    {
+        session()->forget(self::PROMO_KEY);
+    }
+
+    public function discount(): float
+    {
+        return $this->promo()?->discountFor($this->subtotal()) ?? 0.0;
+    }
+
+    public function total(): float
+    {
+        return round($this->subtotal() - $this->discount(), 2);
     }
 
     public function isEmpty(): bool

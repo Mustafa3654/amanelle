@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Currency;
 use Illuminate\Support\Collection;
+use Illuminate\Support\HtmlString;
 
 /**
  * All prices are stored in the base currency (USD). Everything a customer sees
@@ -47,13 +48,29 @@ class Money
         return static::currencies()->firstWhere('code', $code) ?? static::base();
     }
 
-    public static function format(?float $baseAmount): string
+    /**
+     * Returns markup (a <bdi> wrapper), so it must be echoed unescaped.
+     * See Currency::format for why the isolation is necessary.
+     */
+    public static function format(?float $baseAmount): HtmlString
+    {
+        if ($baseAmount === null) {
+            return new HtmlString('');
+        }
+
+        return new HtmlString(
+            static::current()?->format($baseAmount) ?? number_format($baseAmount, 2)
+        );
+    }
+
+    /** Plain text version, for anywhere markup would be wrong. */
+    public static function plain(?float $baseAmount): string
     {
         if ($baseAmount === null) {
             return '';
         }
 
-        return static::current()?->format($baseAmount) ?? number_format($baseAmount, 2);
+        return static::current()?->formatPlain($baseAmount) ?? number_format($baseAmount, 2);
     }
 
     public static function flush(): void

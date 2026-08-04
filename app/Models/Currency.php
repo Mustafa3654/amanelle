@@ -57,10 +57,24 @@ class Currency extends Model
         return round($baseAmount * (float) $this->rate, $this->decimals);
     }
 
+    /**
+     * A price is a number and a symbol that must stay in that order.
+     *
+     * Left as bare text in an RTL page, the bidi algorithm reorders "47.00 $"
+     * into "$ 47.00" — wrong, and it looked like a formatting bug on the
+     * Arabic storefront. <bdi> isolates the run so it renders the same in both
+     * directions.
+     */
     public function format(float $baseAmount): string
     {
         $value = number_format($this->convert($baseAmount), $this->decimals);
 
-        return "{$value} {$this->symbol}";
+        return '<bdi>'.e($value).' '.e($this->symbol).'</bdi>';
+    }
+
+    /** The same amount as plain text, for emails, alerts and page titles. */
+    public function formatPlain(float $baseAmount): string
+    {
+        return number_format($this->convert($baseAmount), $this->decimals).' '.$this->symbol;
     }
 }

@@ -112,7 +112,10 @@ class PromoCodeTest extends TestCase
         $result = $cart->applyPromo('SPEND50');
 
         $this->assertFalse($result['ok']);
-        $this->assertStringContainsString('Spend', $result['message']);
+
+        // Asserts on the amount, not an English word: the default locale is
+        // Arabic, so the wording around it is translated.
+        $this->assertStringContainsString('50.00', $result['message']);
     }
 
     public function test_an_expired_code_is_refused(): void

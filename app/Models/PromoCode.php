@@ -65,7 +65,7 @@ class PromoCode extends Model
 
         if ($this->min_subtotal && $subtotal < (float) $this->min_subtotal) {
             return __('Spend :amount to use this code.', [
-                'amount' => \App\Support\Money::format((float) $this->min_subtotal),
+                'amount' => \App\Support\Money::plain((float) $this->min_subtotal),
             ]);
         }
 
@@ -95,6 +95,6 @@ class PromoCode extends Model
     {
         return $this->type === 'percent'
             ? rtrim(rtrim(number_format((float) $this->value, 2), '0'), '.').'%'
-            : \App\Support\Money::format((float) $this->value);
+            : \App\Support\Money::plain((float) $this->value);
     }
 }

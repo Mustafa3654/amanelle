@@ -14,9 +14,11 @@
         'id' => $v->id,
         'label' => $v->label(),
         'hex' => $v->shade_hex,
-        'price' => \App\Support\Money::format((float) $v->price),
+        // plain(), not format(): this goes into a JSON payload for the
+        // selector, and markup has no business inside a JS string.
+        'price' => \App\Support\Money::plain((float) $v->price),
         'was' => $v->compare_at_price
-            ? \App\Support\Money::format((float) $v->compare_at_price)
+            ? \App\Support\Money::plain((float) $v->compare_at_price)
             : null,
         'stock' => $v->availableIn($market),
     ])->values();

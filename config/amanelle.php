@@ -25,16 +25,18 @@ return [
     | Markets
     |---------------------------------------------------------------------------
     |
-    | Amanelle sources from Saudi Arabia and sells into Lebanon (the bio carries
-    | both flags; captions reference buying perfume in Lebanon). Lebanon
-    | transacts in USD in practice, so LB is priced in USD rather than LBP.
+    | Amanelle sells in Lebanon only. Saudi Arabia is where the stock comes
+    | from, not somewhere we ship to — that is brands.origin_country, a
+    | separate thing. Stock is still keyed by market so adding a second one
+    | later does not need a migration.
     |
     */
 
     'markets' => [
-        'SA' => ['name' => 'السعودية', 'currency' => 'SAR', 'default' => true],
-        'LB' => ['name' => 'لبنان', 'currency' => 'USD', 'default' => false],
+        'LB' => ['name' => 'لبنان', 'currency' => 'USD', 'default' => true],
     ],
+
+    'default_market' => 'LB',
 
     /*
     |---------------------------------------------------------------------------
@@ -51,6 +53,25 @@ return [
         'fragrance' => ['axes' => ['volume', 'concentration']],
         'skincare' => ['axes' => ['volume']],
         'makeup' => ['axes' => ['shade']],
+    ],
+
+    /*
+    |---------------------------------------------------------------------------
+    | Social profiles
+    |---------------------------------------------------------------------------
+    |
+    | Only Instagram is confirmed — on amanelle.store all four icons currently
+    | point at "#", so the other three destinations are unknown. Fill them in
+    | here and the footer picks them up; leave one null and its icon is
+    | dropped rather than rendered as a dead link.
+    |
+    */
+
+    'socials' => [
+        'instagram' => 'https://www.instagram.com/amanelle_beauty',
+        'facebook' => null,
+        'tiktok' => null,
+        'pinterest' => null,
     ],
 
 ];

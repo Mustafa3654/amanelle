@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
+use App\Filament\Forms\Components\WebpUpload;
 use App\Models\Inventory;
 use App\Models\StockMovement;
 use Filament\Actions\Action;
@@ -89,6 +90,11 @@ class VariantsRelationManager extends RelationManager
                         ->prefix('$')
                         ->helperText('Shown struck through. Blank for no discount.'),
                 ]),
+
+            WebpUpload::make('image_path')
+                ->label('Photo for this variant')
+                ->directory('variants')
+                ->helperText('Optional. Use it when the variant looks different — a shade, not another bottle size.'),
 
             Toggle::make('is_active')->label('Available to buy')->default(true),
         ]);

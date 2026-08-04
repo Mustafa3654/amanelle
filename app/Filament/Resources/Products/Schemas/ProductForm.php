@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Filament\Forms\Components\WebpUpload;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
@@ -120,6 +121,22 @@ class ProductForm
                     ->schema([
                         TagsInput::make('skin_types')->placeholder('oily, dry, combination'),
                         TagsInput::make('concerns')->placeholder('dark-circles, fine-lines'),
+                    ]),
+
+                Section::make('Photography')
+                    ->description('Uploads are converted to WebP and resized automatically. A variant with its own photo overrides the main one.')
+                    ->schema([
+                        WebpUpload::make('image_path')
+                            ->label('Main image')
+                            ->directory('products'),
+
+                        WebpUpload::make('gallery')
+                            ->label('More images')
+                            ->directory('products')
+                            ->multiple()
+                            ->reorderable()
+                            ->appendFiles()
+                            ->helperText('Other angles, packaging, the authenticity seal. Drag to reorder.'),
                     ]),
 
                 Section::make('Visibility')

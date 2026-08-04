@@ -35,9 +35,21 @@
                      class="absolute inset-0 transition-colors duration-500"
                      :style="$store.pdp.hex ? `background: radial-gradient(circle at 50% 35%, ${$store.pdp.hex}33, transparent 70%)` : ''">
                 </div>
-                <div class="relative size-full">
-                    <x-product-placeholder :product="$product" />
-                </div>
+                @php $heroImage = $product->displayImage($variants->first()); @endphp
+
+                @if ($heroImage)
+                    <img src="{{ Storage::url($heroImage) }}"
+                         alt="{{ $product->name }}"
+                         {{-- The hero is the largest paint on this page, so it
+                              loads eagerly while everything below stays lazy. --}}
+                         fetchpriority="high"
+                         decoding="async"
+                         class="relative size-full object-cover">
+                @else
+                    <div class="relative size-full">
+                        <x-product-placeholder :product="$product" />
+                    </div>
+                @endif
             </div>
 
             <div x-data="{

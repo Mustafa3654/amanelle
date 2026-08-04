@@ -12,10 +12,13 @@
              cost a lot of scrolling — square fits noticeably more of the
              catalogue per screen, which matters more when browsing. --}}
         <div class="relative aspect-square overflow-hidden rounded-lg bg-surface-2">
-            @if ($variant?->image_path)
-                <img src="{{ asset('storage/'.$variant->image_path) }}"
+            @php $image = $product->displayImage($variant); @endphp
+
+            @if ($image)
+                <img src="{{ Storage::url($image) }}"
                      alt="{{ $product->name }}"
                      loading="lazy"
+                     decoding="async"
                      class="size-full object-cover transition duration-500 group-hover:scale-[1.03]">
             @else
                 <x-product-placeholder :product="$product" />

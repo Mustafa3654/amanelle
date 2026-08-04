@@ -20,6 +20,7 @@ class Product extends Model
     protected function casts(): array
     {
         return [
+            'gallery' => 'array',
             'notes_top' => 'array',
             'notes_heart' => 'array',
             'notes_base' => 'array',
@@ -82,6 +83,19 @@ class Product extends Model
             ->where('is_active', true)
             ->sortBy('price')
             ->first();
+    }
+
+    /**
+     * The image to show for this product, preferring a variant's own shot.
+     *
+     * A lipstick photographs per shade; a perfume needs one bottle picture for
+     * every size. Falling back keeps both cases in one call.
+     */
+    public function displayImage(?ProductVariant $variant = null): ?string
+    {
+        return $variant?->image_path
+            ?? $this->image_path
+            ?? $this->variants->firstWhere('image_path', '!=', null)?->image_path;
     }
 
     public function getRouteKeyName(): string

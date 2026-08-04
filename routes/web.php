@@ -45,6 +45,17 @@ Route::get('/p/{product:slug}', function (Product $product) {
 })->name('product');
 
 Route::view('/cart', 'cart')->name('cart');
+Route::view('/checkout', 'checkout')->name('checkout');
+
+Route::get('/order/{number}', function (string $number) {
+    // Looked up by order number rather than id: the number is what the
+    // customer is told, and sequential ids invite guessing at other people's
+    // orders.
+    $order = \App\Models\Order::where('number', $number)->with('items')->firstOrFail();
+
+    return view('order-confirmation', ['order' => $order]);
+})->name('order.confirmation');
+
 Route::view('/about', 'about')->name('about');
 
 Route::get('/contact', fn () => view('contact'))->name('contact');

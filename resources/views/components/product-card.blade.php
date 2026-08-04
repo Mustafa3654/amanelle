@@ -72,6 +72,10 @@
                     </s>
                 @endif
             </p>
+
+            <div class="mt-2.5">
+                <livewire:add-to-cart :product="$product" :compact="true" :key="'atc-'.$product->id" />
+            </div>
         @endif
     </div>
 </article>

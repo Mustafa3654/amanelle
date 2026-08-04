@@ -1,0 +1,176 @@
+<?php
+
+use App\Exceptions\InsufficientStockException;
+use App\Services\CartService;
+use App\Services\CheckoutService;
+use App\Support\Money;
+use Livewire\Component;
+
+new class extends Component
+{
+    public string $customer_name = '';
+
+    public string $customer_phone = '';
+
+    public string $customer_email = '';
+
+    public string $shipping_address = '';
+
+    public string $city = '';
+
+    public string $notes = '';
+
+    public string $stockError = '';
+
+    protected function rules(): array
+    {
+        return [
+            'customer_name' => ['required', 'string', 'max:120'],
+            // Required, email optional: this market orders by phone and
+            // WhatsApp, and demanding an address people do not use costs
+            // orders.
+            'customer_phone' => ['required', 'string', 'max:40'],
+            'customer_email' => ['nullable', 'email', 'max:190'],
+            'shipping_address' => ['required', 'string', 'max:500'],
+            'city' => ['required', 'string', 'max:120'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    public function place(CheckoutService $checkout)
+    {
+        $data = $this->validate();
+
+        try {
+            $order = $checkout->place($data);
+        } catch (InsufficientStockException $e) {
+            // Someone else took the last one between viewing the cart and
+            // pressing the button. The order rolled back; say so plainly and
+            // let them adjust rather than failing silently.
+            $this->stockError = $e->getMessage();
+
+            return null;
+        }
+
+        return $this->redirect(route('order.confirmation', $order->number), navigate: true);
+    }
+
+    public function with(): array
+    {
+        $cart = app(CartService::class);
+
+        return [
+            'lines' => $cart->lines(),
+            'subtotal' => $cart->subtotal(),
+        ];
+    }
+};
+?>
+
+<div>
+    @if ($lines->isEmpty())
+        <p class="text-sm text-ink-muted">{{ __('Your cart is empty') }}</p>
+        <a href="{{ route('shop') }}"
+           class="mt-6 inline-block rounded-full bg-accent-fill px-6 py-3 text-xs font-semibold
+                  uppercase tracking-[0.18em] text-[#0d0b09]">
+            {{ __('Start shopping') }}
+        </a>
+    @else
+        <div class="grid gap-10 lg:grid-cols-[1fr_22rem] lg:gap-16">
+
+            <form wire:submit="place" class="space-y-5">
+                @if ($stockError)
+                    <p class="rounded-lg border border-red-400/40 bg-red-400/5 px-4 py-3 text-sm text-red-400">
+                        {{ $stockError }}
+                    </p>
+                @endif
+
+                <div>
+                    <label for="customer_name" class="eyebrow block">{{ __('Your name') }}</label>
+                    <input id="customer_name" wire:model="customer_name" type="text"
+                           class="mt-2 w-full rounded-lg border border-hairline bg-surface-2 px-4 py-3 text-sm
+                                  outline-none focus:border-accent-fill">
+                    @error('customer_name') <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="customer_phone" class="eyebrow block">{{ __('Phone') }}</label>
+                    <input id="customer_phone" wire:model="customer_phone" type="tel" dir="ltr"
+                           class="mt-2 w-full rounded-lg border border-hairline bg-surface-2 px-4 py-3 text-sm
+                                  outline-none focus:border-accent-fill">
+                    @error('customer_phone') <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="customer_email" class="eyebrow block">
+                        {{ __('Email') }} <span class="text-ink-muted">{{ __('(optional)') }}</span>
+                    </label>
+                    <input id="customer_email" wire:model="customer_email" type="email" dir="ltr"
+                           class="mt-2 w-full rounded-lg border border-hairline bg-surface-2 px-4 py-3 text-sm
+                                  outline-none focus:border-accent-fill">
+                    @error('customer_email') <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="city" class="eyebrow block">{{ __('City') }}</label>
+                    <input id="city" wire:model="city" type="text"
+                           class="mt-2 w-full rounded-lg border border-hairline bg-surface-2 px-4 py-3 text-sm
+                                  outline-none focus:border-accent-fill">
+                    @error('city') <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="shipping_address" class="eyebrow block">{{ __('Address') }}</label>
+                    <textarea id="shipping_address" wire:model="shipping_address" rows="3"
+                              class="mt-2 w-full resize-y rounded-lg border border-hairline bg-surface-2 px-4 py-3
+                                     text-sm outline-none focus:border-accent-fill"></textarea>
+                    @error('shipping_address') <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="notes" class="eyebrow block">
+                        {{ __('Notes') }} <span class="text-ink-muted">{{ __('(optional)') }}</span>
+                    </label>
+                    <textarea id="notes" wire:model="notes" rows="2"
+                              class="mt-2 w-full resize-y rounded-lg border border-hairline bg-surface-2 px-4 py-3
+                                     text-sm outline-none focus:border-accent-fill"></textarea>
+                </div>
+
+                <p class="text-xs leading-relaxed text-ink-muted">
+                    {{ __('Pay cash on delivery. We will call to confirm your order before it ships.') }}
+                </p>
+
+                <button type="submit" wire:loading.attr="disabled"
+                        class="w-full rounded-full bg-accent-fill px-8 py-4 text-xs font-semibold uppercase
+                               tracking-[0.18em] text-[#0d0b09] transition hover:opacity-90
+                               disabled:opacity-50 sm:w-auto">
+                    <span wire:loading.remove wire:target="place">{{ __('Place order') }}</span>
+                    <span wire:loading wire:target="place">{{ __('Placing…') }}</span>
+                </button>
+            </form>
+
+            <aside class="rounded-xl border border-hairline bg-surface-2 p-5 lg:sticky lg:top-24 lg:self-start">
+                <p class="eyebrow">{{ __('Your order') }}</p>
+
+                <ul class="mt-4 space-y-3 text-sm">
+                    @foreach ($lines as $line)
+                        <li class="flex justify-between gap-3">
+                            <span class="min-w-0">
+                                <span class="block truncate">{{ $line['variant']->product?->name }}</span>
+                                <span class="text-xs text-ink-muted">
+                                    {{ $line['variant']->label() }} × {{ $line['quantity'] }}
+                                </span>
+                            </span>
+                            <span class="shrink-0">{{ Money::format($line['line_total']) }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+
+                <div class="mt-5 flex justify-between border-t border-hairline pt-4">
+                    <span class="eyebrow">{{ __('Total') }}</span>
+                    <span class="text-lg text-accent">{{ Money::format($subtotal) }}</span>
+                </div>
+            </aside>
+        </div>
+    @endif
+</div>

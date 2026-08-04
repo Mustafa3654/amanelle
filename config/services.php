@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    /*
+     * Instant order alerts to a phone. Leave blank and the channel is skipped
+     * silently — the admin bell and email still fire.
+     *
+     * Setup: message @BotFather on Telegram, /newbot, copy the token. Then
+     * message your new bot once and open
+     * https://api.telegram.org/bot<TOKEN>/getUpdates to find your chat id.
+     */
+    'telegram' => [
+        'token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id' => env('TELEGRAM_CHAT_ID'),
+    ],
+
 ];

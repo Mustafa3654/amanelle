@@ -20,7 +20,7 @@ class OrderPlaced extends Notification
         // to storage/logs rather than pretending to have sent anything.
         $channels = ['database', 'mail'];
 
-        if (config('services.telegram.token') && config('services.telegram.chat_id')) {
+        if (\App\Support\Telegram::isConfigured()) {
             $channels[] = \App\Notifications\Channels\TelegramChannel::class;
         }
 

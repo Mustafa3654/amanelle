@@ -23,8 +23,8 @@ class TelegramChannel
             return;
         }
 
-        $token = config('services.telegram.token');
-        $chatId = config('services.telegram.chat_id');
+        $token = \App\Support\Telegram::token();
+        $chatId = \App\Support\Telegram::chatId();
 
         // Unconfigured is the normal state until the shop owner sets it up, so
         // it is a silent no-op rather than a failed job on every order.

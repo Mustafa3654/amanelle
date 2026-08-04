@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 
 class Setting extends Model
 {
@@ -40,5 +42,34 @@ class Setting extends Model
     public static function put(string $key, mixed $value): void
     {
         static::updateOrCreate(['key' => $key], ['value' => ['v' => $value]]);
+    }
+
+    /**
+     * Store a credential encrypted at rest.
+     *
+     * A Telegram bot token is enough to impersonate the shop's alerts, so it
+     * should not sit in plaintext in a database backup.
+     */
+    public static function putEncrypted(string $key, ?string $value): void
+    {
+        static::put($key, $value === null ? null : Crypt::encryptString($value));
+    }
+
+    public static function getEncrypted(string $key): ?string
+    {
+        $stored = static::get($key);
+
+        if (! is_string($stored) || $stored === '') {
+            return null;
+        }
+
+        try {
+            return Crypt::decryptString($stored);
+        } catch (DecryptException) {
+            // A rotated APP_KEY makes old values unreadable. Returning null
+            // degrades to "not configured" rather than throwing on every
+            // request that touches settings.
+            return null;
+        }
     }
 }

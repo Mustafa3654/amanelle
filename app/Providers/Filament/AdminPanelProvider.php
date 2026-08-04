@@ -26,6 +26,11 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            // Lets staff change their own name, email and password from the
+            // user menu, so the seeded password does not have to be reset
+            // through tinker.
+            ->profile(isSimple: false)
+            ->passwordReset()
             ->colors([
                 'primary' => Color::Amber,
             ])

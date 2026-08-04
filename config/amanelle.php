@@ -40,6 +40,20 @@ return [
 
     /*
     |---------------------------------------------------------------------------
+    | Reservation window
+    |---------------------------------------------------------------------------
+    |
+    | Hours a pending order may hold stock before `stock:release-expired` puts
+    | the units back on sale. Stock is reserved when an order is placed and
+    | only deducted from the shelf count on delivery, so without a window one
+    | abandoned checkout removes an item from sale indefinitely.
+    |
+    */
+
+    'reservation_hours' => 48,
+
+    /*
+    |---------------------------------------------------------------------------
     | Product types
     |---------------------------------------------------------------------------
     |

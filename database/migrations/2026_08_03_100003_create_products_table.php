@@ -27,7 +27,7 @@ return new class extends Migration
             // English both hit one index. A generated column over the JSON
             // would be neater, but MariaDB 10.4 (what XAMPP ships) is fussy
             // about indexing JSON extraction, and this stays portable.
-            $table->text('search_text')->nullable()->fulltext();
+            $table->text('search_text')->nullable();
 
             // --- Fragrance ---------------------------------------------------
             // Longevity and projection, not a note pyramid. Every caption on
@@ -52,6 +52,15 @@ return new class extends Migration
             $table->index(['is_active', 'is_featured']);
             $table->index(['type', 'is_active']);
         });
+
+        // SQLite (used by the test suite) has no FULLTEXT, so this is added
+        // separately rather than inline — otherwise every test that touches
+        // the schema dies on migration.
+        if (in_array(Schema::getConnection()->getDriverName(), ['mysql', 'mariadb'], true)) {
+            Schema::table('products', function (Blueprint $table) {
+                $table->fullText('search_text');
+            });
+        }
     }
 
     public function down(): void

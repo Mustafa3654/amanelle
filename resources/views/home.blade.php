@@ -58,29 +58,14 @@
         </div>
     </section>
 
-    {{-- Category rail. Four destinations, so a row of cards beats a carousel:
-         nothing is hidden behind a swipe. --}}
-    <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
-        <p class="eyebrow">{{ __('Shop by category') }}</p>
-
-        <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-            @foreach ($categories as $category)
-                <a href="{{ route('category', $category->slug) }}"
-                   class="group relative grid aspect-[3/2] place-items-center overflow-hidden rounded-lg
-                          border border-hairline bg-surface-2 transition hover:border-accent-fill/50">
-                    <span class="font-display text-lg transition group-hover:text-accent">
-                        {{ $category->name }}
-                    </span>
-                </a>
-            @endforeach
-        </div>
-    </section>
-
+    {{-- Products come first below the hero. The category tiles that used to sit
+         here only repeated what the shop page already does, and pushed the
+         actual merchandise a full screen further down. --}}
     @if ($featured->isNotEmpty())
-        <section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-24">
+        <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-20">
             <div class="flex items-baseline justify-between">
                 <p class="eyebrow">{{ __('Featured') }}</p>
-                <a href="{{ route('category', 'perfumes') }}" class="text-xs text-accent hover:underline">
+                <a href="{{ route('shop') }}" class="text-xs text-accent hover:underline">
                     {{ __('View all') }}
                 </a>
             </div>

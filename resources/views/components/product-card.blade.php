@@ -8,9 +8,10 @@
 
 <article class="group flex flex-col">
     <a href="{{ route('product', $product->slug) }}" class="block">
-        {{-- Square on a phone, portrait from sm up. At 2-up on 375px the 4:5
-             crop made the grid scroll forever for very little extra product. --}}
-        <div class="relative aspect-square overflow-hidden rounded-lg bg-surface-2 sm:aspect-[4/5]">
+        {{-- Square at every size. The 4:5 crop bought a little more bottle and
+             cost a lot of scrolling — square fits noticeably more of the
+             catalogue per screen, which matters more when browsing. --}}
+        <div class="relative aspect-square overflow-hidden rounded-lg bg-surface-2">
             @if ($variant?->image_path)
                 <img src="{{ asset('storage/'.$variant->image_path) }}"
                      alt="{{ $product->name }}"

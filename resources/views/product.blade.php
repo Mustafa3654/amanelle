@@ -26,7 +26,7 @@
     <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
         <div class="grid gap-10 lg:grid-cols-2 lg:gap-16">
 
-            <div class="relative aspect-[4/5] overflow-hidden rounded-xl bg-surface-2">
+            <div class="relative aspect-square overflow-hidden rounded-xl bg-surface-2">
                 {{-- The selected shade washes the plate behind the product, so
                      picking a colour changes the room around it. --}}
                 <div x-data

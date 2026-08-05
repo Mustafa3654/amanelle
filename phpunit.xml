@@ -19,6 +19,11 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- The test client resolves every request against app.url. Real
+             APP_URL carries a subdirectory while the app is served from
+             htdocs/amanelle/public, which would prefix that path onto every
+             test request and 404 the lot. -->
+        <env name="APP_URL" value="http://localhost"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>

@@ -16,23 +16,26 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('/shop', function () {
+Route::get('/shop', function (Request $request) {
+    $filters = \App\Support\ProductQuery::fromRequest($request);
+
     return view('shop', [
-        'categories' => Category::active()->withCount('products')->orderBy('sort_order')->get(),
-        'products' => Product::active()
-            ->with(['brand', 'variants', 'references'])
-            ->latest('published_at')
-            ->paginate(12),
+        'filters' => $filters,
+        'products' => \App\Support\ProductQuery::apply(Product::query(), $filters)
+            ->paginate(12)
+            ->withQueryString(),
     ]);
 })->name('shop');
 
-Route::get('/c/{category:slug}', function (Category $category) {
+Route::get('/c/{category:slug}', function (Request $request, Category $category) {
+    $filters = \App\Support\ProductQuery::fromRequest($request);
+
     return view('category', [
         'category' => $category,
-        'products' => $category->products()
-            ->active()
-            ->with(['brand', 'variants', 'references'])
-            ->paginate(12),
+        'filters' => $filters,
+        'products' => \App\Support\ProductQuery::apply($category->products(), $filters)
+            ->paginate(12)
+            ->withQueryString(),
     ]);
 })->name('category');
 

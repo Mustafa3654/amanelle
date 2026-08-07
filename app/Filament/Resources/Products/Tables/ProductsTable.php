@@ -2,9 +2,15 @@
 
 namespace App\Filament\Resources\Products\Tables;
 
+use App\Filament\Resources\Products\ProductResource;
+use App\Models\Product;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Str;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -81,9 +87,86 @@ class ProductsTable
             ])
             ->recordActions([
                 EditAction::make(),
+
+                /*
+                 * Most of this catalogue is perfumes that differ only in name
+                 * and notes, so re-entering brand, category, prices and
+                 * variants each time is the slowest part of adding stock.
+                 *
+                 * The copy is unpublished and stock starts at zero: a
+                 * half-filled duplicate must never appear in the shop, and
+                 * inheriting the original's stock would invent units.
+                 */
+                Action::make('duplicate')
+                    ->label('Duplicate')
+                    ->icon('heroicon-o-document-duplicate')
+                    ->color('gray')
+                    ->requiresConfirmation()
+                    ->modalDescription('Creates an unpublished copy with the same variants and prices, and no stock.')
+                    ->action(function (Product $record) {
+                        /*
+                         * Reloaded clean before replicating: the row handed to
+                         * this action carries the table's withCount and withSum
+                         * aggregates as attributes, and replicate() would try
+                         * to insert them as columns.
+                         */
+                        $source = Product::with('variants')->findOrFail($record->getKey());
+
+                        $copy = $source->replicate(['search_text']);
+                        $copy->slug = $source->slug.'-copy-'.Str::lower(Str::random(4));
+                        $copy->is_active = false;
+                        $copy->is_featured = false;
+                        $copy->setTranslations('name', collect($source->getTranslations('name'))
+                            ->map(fn ($n) => $n.' (copy)')
+                            ->all());
+                        $copy->save();
+
+                        foreach ($source->variants as $variant) {
+                            $newVariant = $variant->replicate();
+                            $newVariant->product_id = $copy->id;
+                            $newVariant->sku = $variant->sku.'-C'.Str::upper(Str::random(3));
+                            $newVariant->save();
+                        }
+
+                        Notification::make()
+                            ->title('Duplicated')
+                            ->body('The copy is unpublished with no stock. Edit it, then publish.')
+                            ->success()
+                            ->send();
+
+                        return redirect(ProductResource::getUrl('edit', ['record' => $copy]));
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    BulkAction::make('publish')
+                        ->label('Publish')
+                        ->icon('heroicon-o-eye')
+                        ->requiresConfirmation()
+                        ->action(fn ($records) => $records->each->update(['is_active' => true]))
+                        ->deselectRecordsAfterCompletion(),
+
+                    BulkAction::make('unpublish')
+                        ->label('Unpublish')
+                        ->icon('heroicon-o-eye-slash')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->action(fn ($records) => $records->each->update(['is_active' => false]))
+                        ->deselectRecordsAfterCompletion(),
+
+                    BulkAction::make('feature')
+                        ->label('Feature on the homepage')
+                        ->icon('heroicon-o-star')
+                        ->action(fn ($records) => $records->each->update(['is_featured' => true]))
+                        ->deselectRecordsAfterCompletion(),
+
+                    BulkAction::make('unfeature')
+                        ->label('Remove from the homepage')
+                        ->icon('heroicon-o-star')
+                        ->color('gray')
+                        ->action(fn ($records) => $records->each->update(['is_featured' => false]))
+                        ->deselectRecordsAfterCompletion(),
+
                     DeleteBulkAction::make(),
                 ]),
             ]);

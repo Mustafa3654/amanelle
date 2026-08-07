@@ -25,6 +25,22 @@ class ProductResource extends Resource
     protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'slug';
+    public static function getGloballySearchableAttributes(): array
+    {
+        // search_text, not name: the name lives in a JSON column and is not
+        // directly searchable.
+        return ['search_text', 'slug'];
+    }
+
+    public static function getGlobalSearchResultTitle($record): string
+    {
+        return (string) $record->name;
+    }
+
+    public static function getGlobalSearchResultDetails($record): array
+    {
+        return ['Brand' => (string) ($record->brand?->name ?? '-')];
+    }
 
     public static function form(Schema $schema): Schema
     {

@@ -25,6 +25,15 @@ class OrderResource extends Resource
     protected static ?int $navigationSort = 0;
 
     protected static ?string $recordTitleAttribute = 'number';
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['number', 'customer_name', 'customer_phone'];
+    }
+
+    public static function getGlobalSearchResultDetails($record): array
+    {
+        return ['Customer' => $record->customer_name, 'Status' => $record->status];
+    }
 
     public static function form(Schema $schema): Schema
     {

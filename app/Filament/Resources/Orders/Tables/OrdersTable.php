@@ -124,6 +124,68 @@ class OrdersTable
                     }),
 
                 EditAction::make(),
+            ])
+            ->toolbarActions([
+                /*
+                 * Streamed rather than built in memory: an accountant asking
+                 * for "everything this year" should not depend on how much
+                 * RAM PHP happens to have.
+                 *
+                 * Exports respect the current filters, so "delivered in
+                 * November" is done by filtering the table then exporting.
+                 */
+                Action::make('export')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('gray')
+                    ->action(function ($livewire) {
+                        $query = $livewire->getFilteredTableQuery();
+
+                        return response()->streamDownload(function () use ($query) {
+                            $out = fopen('php://output', 'w');
+
+                            // BOM so Excel opens Arabic customer names as
+                            // UTF-8 instead of mojibake.
+                            fwrite($out, "\xEF\xBB\xBF");
+
+                            fputcsv($out, [
+                                'Order', 'Placed', 'Status', 'Customer', 'Phone', 'Email',
+                                'City', 'Delivery area', 'Address',
+                                'Subtotal USD', 'Discount USD', 'Promo', 'Delivery USD',
+                                'Total USD', 'Shown in', 'Rate', 'Items',
+                            ]);
+
+                            $query->with('items')->chunk(200, function ($orders) use ($out) {
+                                foreach ($orders as $order) {
+                                    fputcsv($out, [
+                                        $order->number,
+                                        $order->placed_at?->format('Y-m-d H:i'),
+                                        $order->status,
+                                        $order->customer_name,
+                                        $order->customer_phone,
+                                        $order->customer_email,
+                                        $order->city,
+                                        $order->delivery_zone_name,
+                                        $order->shipping_address,
+                                        $order->subtotal,
+                                        $order->discount_total,
+                                        $order->promo_code,
+                                        $order->shipping_total,
+                                        $order->total,
+                                        $order->display_currency,
+                                        $order->display_rate,
+                                        $order->items
+                                            ->map(fn ($i) => "{$i->quantity}x {$i->product_name} ({$i->variant_label})")
+                                            ->implode('; '),
+                                    ]);
+                                }
+                            });
+
+                            fclose($out);
+                        }, 'amanelle-orders-'.now()->format('Y-m-d').'.csv', [
+                            'Content-Type' => 'text/csv; charset=UTF-8',
+                        ]);
+                    }),
             ]);
     }
 }

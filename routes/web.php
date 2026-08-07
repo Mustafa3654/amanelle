@@ -44,7 +44,23 @@ Route::get('/p/{product:slug}', function (Product $product) {
 
     $product->load(['brand', 'category', 'variants.inventories', 'references']);
 
-    return view('product', ['product' => $product]);
+    /*
+     * Same category first, falling back to the same brand, so a page always
+     * has something to move on to. Ordered by newest rather than "related"
+     * scoring — at this catalogue size anything cleverer is guesswork
+     * dressed up as a recommendation.
+     */
+    $related = Product::active()
+        ->whereKeyNot($product->id)
+        ->where(fn ($q) => $q
+            ->where('category_id', $product->category_id)
+            ->orWhere('brand_id', $product->brand_id))
+        ->with(['brand', 'variants', 'references'])
+        ->latest('published_at')
+        ->take(4)
+        ->get();
+
+    return view('product', ['product' => $product, 'related' => $related]);
 })->name('product');
 
 Route::view('/cart', 'cart')->name('cart');

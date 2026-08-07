@@ -42,26 +42,53 @@
     <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
         <div class="grid gap-10 lg:grid-cols-2 lg:gap-16">
 
-            <div class="relative aspect-square overflow-hidden rounded-xl bg-surface-2">
-                {{-- The selected shade washes the plate behind the product, so
-                     picking a colour changes the room around it. --}}
-                <div x-data
-                     class="absolute inset-0 transition-colors duration-500"
-                     :style="$store.pdp.hex ? `background: radial-gradient(circle at 50% 35%, ${$store.pdp.hex}33, transparent 70%)` : ''">
-                </div>
-                @php $heroImage = $product->displayImage($variants->first()); @endphp
+            @php
+                $heroImage = $product->displayImage($variants->first());
+                // Hero first, then any gallery shots. Variant photos join the
+                // strip too, so a shade you can pick is a shade you can see.
+                $shots = collect([$heroImage])
+                    ->merge($product->gallery ?? [])
+                    ->merge($variants->pluck('image_path'))
+                    ->filter()
+                    ->unique()
+                    ->values();
+            @endphp
 
-                @if ($heroImage)
-                    <img src="{{ Storage::url($heroImage) }}"
-                         alt="{{ $product->name }}"
-                         {{-- The hero is the largest paint on this page, so it
-                              loads eagerly while everything below stays lazy. --}}
-                         fetchpriority="high"
-                         decoding="async"
-                         class="relative size-full object-cover">
-                @else
-                    <div class="relative size-full">
-                        <x-product-placeholder :product="$product" />
+            <div x-data="{ active: @js($heroImage ? Storage::url($heroImage) : null) }">
+                <div class="relative aspect-square overflow-hidden rounded-xl bg-surface-2">
+                    {{-- The selected shade washes the plate behind the product,
+                         so picking a colour changes the room around it. --}}
+                    <div class="absolute inset-0 transition-colors duration-500"
+                         :style="$store.pdp.hex ? `background: radial-gradient(circle at 50% 35%, ${$store.pdp.hex}33, transparent 70%)` : ''">
+                    </div>
+
+                    @if ($shots->isNotEmpty())
+                        <img :src="active"
+                             alt="{{ $product->name }}"
+                             {{-- Largest paint on the page, so it loads eagerly
+                                  while everything below stays lazy. --}}
+                             fetchpriority="high"
+                             decoding="async"
+                             class="relative size-full object-cover">
+                    @else
+                        <div class="relative size-full">
+                            <x-product-placeholder :product="$product" />
+                        </div>
+                    @endif
+                </div>
+
+                @if ($shots->count() > 1)
+                    <div class="mt-3 flex gap-2 overflow-x-auto pb-1
+                                [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        @foreach ($shots as $shot)
+                            @php $url = Storage::url($shot); @endphp
+                            <button type="button"
+                                    @click="active = @js($url)"
+                                    :class="active === @js($url) ? 'border-accent-fill' : 'border-hairline'"
+                                    class="size-16 shrink-0 overflow-hidden rounded-lg border transition">
+                                <img src="{{ $url }}" alt="" loading="lazy" class="size-full object-cover">
+                            </button>
+                        @endforeach
                     </div>
                 @endif
             </div>
@@ -159,7 +186,71 @@
                 @endif
             </div>
         </div>
+
+        @php
+            $notes = collect([
+                __('Top notes') => $product->notes_top,
+                __('Heart notes') => $product->notes_heart,
+                __('Base notes') => $product->notes_base,
+            ])->filter(fn ($set) => filled($set));
+
+            $longDescription = (string) $product->description;
+            $showLongDescription = filled($longDescription)
+                && $longDescription !== (string) $product->short_description;
+        @endphp
+
+        @if ($showLongDescription || $notes->isNotEmpty())
+            <div class="mt-16 grid gap-10 border-t border-hairline pt-12 lg:grid-cols-2 lg:gap-16">
+                @if ($showLongDescription)
+                    <div>
+                        <p class="eyebrow">{{ __('About this product') }}</p>
+                        <div class="mt-4 space-y-4 text-sm leading-relaxed text-ink-muted">
+                            @foreach (preg_split('/\R{2,}/', $longDescription) as $paragraph)
+                                <p>{{ $paragraph }}</p>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                @if ($notes->isNotEmpty())
+                    <div>
+                        {{-- Distinct key from the checkout's "Notes" field:
+                             same English word, different Arabic. --}}
+                        <p class="eyebrow">{{ __('Fragrance notes') }}</p>
+
+                        {{-- Listed top to base, the order they actually reach
+                             you — the pyramid is a sequence, not a category. --}}
+                        <dl class="mt-4 space-y-4">
+                            @foreach ($notes as $tier => $set)
+                                <div class="flex flex-col gap-1.5 sm:flex-row sm:gap-4">
+                                    <dt class="w-28 shrink-0 text-xs text-ink-muted">{{ $tier }}</dt>
+                                    <dd class="flex flex-wrap gap-1.5">
+                                        @foreach ($set as $note)
+                                            <span class="rounded-full border border-hairline px-3 py-1 text-xs">
+                                                {{ $note }}
+                                            </span>
+                                        @endforeach
+                                    </dd>
+                                </div>
+                            @endforeach
+                        </dl>
+                    </div>
+                @endif
+            </div>
+        @endif
     </section>
+
+    @if ($related->isNotEmpty())
+        <section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-24">
+            <p class="eyebrow">{{ __('You might also like') }}</p>
+
+            <div class="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
+                @foreach ($related as $item)
+                    <x-product-card :product="$item" />
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     {{-- Sticky purchase bar, the pattern every mobile fragrance site uses: the
          price and the action stay reachable however far down the page you are.

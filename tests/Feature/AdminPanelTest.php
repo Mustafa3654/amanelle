@@ -38,9 +38,67 @@ class AdminPanelTest extends TestCase
             '/admin/promo-codes',
             '/admin/notification-settings',
             '/admin/profile',
+            '/admin/delivery-zones',
+            '/admin/enquiries',
+            '/admin/instagram-posts',
+            '/admin/stock-movements',
         ] as $path) {
             $this->get($path)->assertOk();
         }
+    }
+
+    public function test_duplicating_a_product_copies_variants_but_not_stock(): void
+    {
+        $product = \App\Models\Product::create([
+            'type' => 'fragrance',
+            'name' => ['en' => 'Pink Lady'],
+            'slug' => 'pink-lady',
+            'is_active' => true,
+            'is_featured' => true,
+        ]);
+
+        $variant = \App\Models\ProductVariant::create([
+            'product_id' => $product->id,
+            'sku' => 'ASF-PL-100',
+            'price' => 49,
+            'currency' => 'USD',
+            'is_active' => true,
+        ]);
+
+        \App\Models\Inventory::create([
+            'product_variant_id' => $variant->id,
+            'market' => 'LB',
+            'quantity' => 12,
+            'reserved' => 0,
+        ]);
+
+        Livewire::test(\App\Filament\Resources\Products\Pages\ListProducts::class)
+            ->callTableAction('duplicate', $product);
+
+        $copy = \App\Models\Product::where('id', '!=', $product->id)->sole();
+
+        // A half-filled duplicate must never appear in the shop, and
+        // inheriting stock would invent units that do not exist.
+        $this->assertFalse($copy->is_active);
+        $this->assertFalse($copy->is_featured);
+        $this->assertCount(1, $copy->variants);
+        $this->assertNotSame($variant->sku, $copy->variants->first()->sku);
+        $this->assertSame(0, $copy->variants->first()->availableIn('LB'));
+    }
+
+    public function test_bulk_publishing_works(): void
+    {
+        $products = collect(range(1, 3))->map(fn ($i) => \App\Models\Product::create([
+            'type' => 'fragrance',
+            'name' => ['en' => "P{$i}"],
+            'slug' => "p{$i}",
+            'is_active' => false,
+        ]));
+
+        Livewire::test(\App\Filament\Resources\Products\Pages\ListProducts::class)
+            ->callTableBulkAction('publish', $products);
+
+        $this->assertSame(3, \App\Models\Product::where('is_active', true)->count());
     }
 
     public function test_telegram_credentials_round_trip_and_the_token_is_encrypted(): void

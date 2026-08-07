@@ -78,6 +78,8 @@
         </section>
     @endif
 
+    <x-instagram-feed />
+
     {{-- The authenticity promise. It is the account's single biggest content
          theme, so it earns a band of its own rather than a line in the footer. --}}
     <section class="border-y border-hairline bg-surface-2">

@@ -47,11 +47,22 @@ Route::get('/p/{product:slug}', function (Product $product) {
 Route::view('/cart', 'cart')->name('cart');
 Route::view('/checkout', 'checkout')->name('checkout');
 
-Route::get('/order/{number}', function (string $number) {
-    // Looked up by order number rather than id: the number is what the
-    // customer is told, and sequential ids invite guessing at other people's
-    // orders.
+Route::view('/track', 'track')->name('track');
+
+Route::get('/order/{number}', function (Request $request, string $number) {
     $order = \App\Models\Order::where('number', $number)->with('items')->firstOrFail();
+
+    /*
+     * Order numbers are sequential by day and trivially guessable, and this
+     * page shows a name, phone number and home address. Knowing the number is
+     * therefore not enough — the session must have been granted access, which
+     * happens by placing the order or by passing the lookup on /track, where
+     * the phone number has to match.
+     */
+    abort_unless(
+        in_array($order->number, $request->session()->get('viewable_orders', []), true),
+        403
+    );
 
     return view('order-confirmation', ['order' => $order]);
 })->name('order.confirmation');

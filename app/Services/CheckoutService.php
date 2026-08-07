@@ -113,6 +113,9 @@ class CheckoutService
 
             $this->cart->clear();
 
+            // So they can see the confirmation page they are about to land on.
+            $order->grantSessionAccess();
+
             $this->notifyStaff($order);
 
             return $order;

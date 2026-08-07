@@ -29,6 +29,7 @@
                     <ul class="mt-4 space-y-2.5">
                         <li><a href="{{ route('about') }}" class="hover:text-accent">{{ __('About us') }}</a></li>
                         <li><a href="{{ route('contact') }}" class="hover:text-accent">{{ __('Contact us') }}</a></li>
+                        <li><a href="{{ route('track') }}" class="hover:text-accent">{{ __('Track your order') }}</a></li>
                     </ul>
                 </div>
 

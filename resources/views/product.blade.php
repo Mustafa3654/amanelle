@@ -1,6 +1,20 @@
 @extends('layouts.app')
 
-@section('title', $product->name.' — '.config('app.name'))
+@section('title', $product->name.' — '.($product->brand?->name ?? config('app.name')))
+
+@section('description', \Illuminate\Support\Str::limit(strip_tags((string) $product->short_description), 155))
+
+@section('og_type', 'product')
+
+@php
+    // The bottle, not the logo. A shared link showing the actual product is
+    // the whole reason these tags exist.
+    $ogImage = $product->displayImage();
+@endphp
+
+@if ($ogImage)
+    @section('image', \Illuminate\Support\Facades\Storage::url($ogImage))
+@endif
 
 @php
     $market = config('amanelle.default_market');
@@ -176,6 +190,39 @@
 @endsection
 
 @push('scripts')
+@php
+    /*
+     * Structured data, so a search result can show the price and whether it is
+     * in stock rather than just a blue link.
+     *
+     * Built here rather than inline in the script tag: schema.org keys start
+     * with "@", and Blade reads '@context' in a template as a directive.
+     */
+    $structuredData = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Product',
+        'name' => (string) $product->name,
+        'description' => strip_tags((string) $product->short_description),
+        'sku' => $variants->first()?->sku,
+        'brand' => ['@type' => 'Brand', 'name' => (string) ($product->brand?->name ?? config('app.name'))],
+        'image' => $ogImage ? [\Illuminate\Support\Facades\Storage::url($ogImage)] : [],
+        'offers' => [
+            '@type' => 'AggregateOffer',
+            'priceCurrency' => 'USD',
+            'lowPrice' => (float) $variants->min('price'),
+            'highPrice' => (float) $variants->max('price'),
+            'offerCount' => $variants->count(),
+            'availability' => $variants->contains(fn ($v) => $v->availableIn($market) > 0)
+                ? 'https://schema.org/InStock'
+                : 'https://schema.org/OutOfStock',
+        ],
+    ];
+@endphp
+
+<script type="application/ld+json">
+    {!! json_encode($structuredData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+</script>
+
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.store('pdp', {

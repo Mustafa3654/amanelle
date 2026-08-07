@@ -25,8 +25,39 @@
                 {{ __('We will call you on :phone to confirm before it ships.', ['phone' => $order->customer_phone]) }}
             </p>
 
-            <p class="eyebrow mt-5">{{ __('Order') }} {{ $order->number }}</p>
+            <p class="eyebrow mt-5">{{ __('Order') }} <span dir="ltr">{{ $order->number }}</span></p>
         </div>
+
+        {{-- Doubles as the tracking page, so where the order has got to is the
+             thing someone returning actually came for. --}}
+        @php
+            $steps = ['pending' => __('Pending'), 'processing' => __('Processing'), 'shipped' => __('Shipped'), 'delivered' => __('Delivered')];
+            $currentIndex = array_search($order->status, array_keys($steps), true);
+        @endphp
+
+        @if ($order->status === 'cancelled')
+            <p class="mt-8 rounded-lg border border-red-400/40 bg-red-400/5 px-4 py-3 text-center text-sm text-red-400">
+                {{ __('This order was cancelled.') }}
+            </p>
+        @else
+            <ol class="mt-10 flex items-center gap-1" aria-label="{{ __('Order status') }}">
+                @foreach ($steps as $key => $label)
+                    @php $done = $currentIndex !== false && $loop->index <= $currentIndex; @endphp
+                    <li class="flex-1 text-center">
+                        <div @class([
+                                'h-1 rounded-full',
+                                'bg-accent-fill' => $done,
+                                'bg-surface-3' => ! $done,
+                            ])></div>
+                        <span @class([
+                                'mt-2 block text-[11px]',
+                                'text-accent' => $done,
+                                'text-ink-muted' => ! $done,
+                            ])>{{ $label }}</span>
+                    </li>
+                @endforeach
+            </ol>
+        @endif
 
         <ul class="mt-10 divide-y divide-hairline border-y border-hairline">
             @foreach ($order->items as $item)
@@ -42,10 +73,40 @@
             @endforeach
         </ul>
 
-        <div class="mt-5 flex justify-between">
-            <span class="eyebrow">{{ __('Total') }}</span>
-            <span class="text-lg text-accent">{{ $show((float) $order->total) }}</span>
-        </div>
+        <dl class="mt-5 space-y-2 text-sm">
+            <div class="flex justify-between">
+                <dt class="text-ink-muted">{{ __('Subtotal') }}</dt>
+                <dd>{{ $show((float) $order->subtotal) }}</dd>
+            </div>
+
+            @if ((float) $order->discount_total > 0)
+                <div class="flex justify-between text-accent">
+                    <dt>{{ __('Discount') }} <span class="text-xs">{{ $order->promo_code }}</span></dt>
+                    <dd>−{{ $show((float) $order->discount_total) }}</dd>
+                </div>
+            @endif
+
+            <div class="flex justify-between">
+                <dt class="text-ink-muted">
+                    {{ __('Delivery') }}
+                    @if ($order->delivery_zone_name)
+                        <span class="text-xs">· {{ $order->deliveryZone?->name ?? $order->delivery_zone_name }}</span>
+                    @endif
+                </dt>
+                <dd>
+                    @if ((float) $order->shipping_total > 0)
+                        {{ $show((float) $order->shipping_total) }}
+                    @else
+                        <span class="text-accent">{{ __('Free') }}</span>
+                    @endif
+                </dd>
+            </div>
+
+            <div class="flex justify-between border-t border-hairline pt-3">
+                <dt class="eyebrow">{{ __('Total') }}</dt>
+                <dd class="text-lg text-accent">{{ $show((float) $order->total) }}</dd>
+            </div>
+        </dl>
 
         <p class="mt-8 rounded-lg border border-hairline bg-surface-2 px-4 py-3 text-xs leading-relaxed text-ink-muted">
             {{ __('Pay cash on delivery. Keep this order number handy if you message us.') }}

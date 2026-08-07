@@ -41,6 +41,11 @@ class Order extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    public function deliveryZone(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(DeliveryZone::class);
+    }
+
     protected static function booted(): void
     {
         /*
@@ -61,6 +66,8 @@ class Order extends Model
                 'cancelled' => $stock->releaseFor($order),
                 default => null,
             };
+
+            $order->notifyCustomerOfStatus();
         });
     }
 
@@ -80,6 +87,47 @@ class Order extends Model
             ->whereNull('stock_released_at')
             ->whereNull('stock_fulfilled_at')
             ->where('reservation_expires_at', '<=', now());
+    }
+
+    /**
+     * Let the customer know where their order is.
+     *
+     * Wrapped and swallowed: the status change and its stock movement are the
+     * real work, and a mail server having a bad day must not undo them.
+     */
+    public function notifyCustomerOfStatus(): void
+    {
+        if (! \App\Notifications\OrderStatusChanged::shouldNotifyFor($this->status)) {
+            return;
+        }
+
+        if (! $this->customer_email) {
+            return;
+        }
+
+        try {
+            \Illuminate\Support\Facades\Notification::route('mail', $this->customer_email)
+                ->notify(new \App\Notifications\OrderStatusChanged($this));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Customer status email failed', [
+                'order' => $this->number,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Let this session view this order.
+     *
+     * Granted on checkout and on a successful lookup, since order numbers
+     * alone are guessable and the page carries a home address.
+     */
+    public function grantSessionAccess(): void
+    {
+        $seen = session('viewable_orders', []);
+        $seen[] = $this->number;
+
+        session()->put('viewable_orders', array_values(array_unique($seen)));
     }
 
     public static function nextNumber(): string

@@ -7,7 +7,40 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', config('app.name'))</title>
+
+    @php
+        // Almost all of Amanelle's traffic arrives from a link shared on
+        // Instagram or WhatsApp. Those apps fetch the page and build a preview
+        // card from these tags; without them a shared link is bare grey text.
+        $metaTitle = trim($__env->yieldContent('title')) ?: config('app.name');
+        $metaDescription = trim($__env->yieldContent('description'))
+            ?: __('Original Gulf fragrance and authentic cosmetics, delivered across Lebanon.');
+        $metaImage = trim($__env->yieldContent('image')) ?: asset('images/logo.jpeg');
+    @endphp
+
+    <title>{{ $metaTitle }}</title>
+    <meta name="description" content="{{ $metaDescription }}">
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:site_name" content="{{ config('app.name') }}">
+    <meta property="og:title" content="{{ $metaTitle }}">
+    <meta property="og:description" content="{{ $metaDescription }}">
+    <meta property="og:image" content="{{ $metaImage }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:locale" content="{{ $locale === 'ar' ? 'ar_LB' : 'en_US' }}">
+
+    {{-- summary_large_image, not summary: a small square thumbnail wastes the
+         product photography these links exist to show off. --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $metaTitle }}">
+    <meta name="twitter:description" content="{{ $metaDescription }}">
+    <meta name="twitter:image" content="{{ $metaImage }}">
+
+    <meta name="theme-color" content="#0d0b09">
+
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.jpeg') }}">
 
     {{-- Runs before first paint so the page never flashes light then snaps to
          dark. Reads the stored choice, falls back to the OS. Deliberately

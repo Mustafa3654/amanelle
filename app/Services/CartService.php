@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\DeliveryZone;
 use App\Models\ProductVariant;
 use App\Models\PromoCode;
 use Illuminate\Support\Collection;
@@ -184,9 +185,38 @@ class CartService
         return $this->promo()?->discountFor($this->subtotal()) ?? 0.0;
     }
 
+    public const ZONE_KEY = 'delivery_zone';
+
+    /**
+     * Re-resolved from the database like the promo code, so a zone that is
+     * deactivated or repriced cannot be checked out at the old fee.
+     */
+    public function zone(): ?DeliveryZone
+    {
+        $id = session(self::ZONE_KEY);
+
+        return $id
+            ? DeliveryZone::active()->find($id)
+            : DeliveryZone::active()->where('is_default', true)->first();
+    }
+
+    public function setZone(?int $id): void
+    {
+        session()->put(self::ZONE_KEY, $id);
+    }
+
+    /**
+     * Delivery is charged on the discounted subtotal, so a promo code can
+     * carry an order over a free-delivery threshold.
+     */
+    public function shipping(): float
+    {
+        return $this->zone()?->feeFor($this->subtotal() - $this->discount()) ?? 0.0;
+    }
+
     public function total(): float
     {
-        return round($this->subtotal() - $this->discount(), 2);
+        return round($this->subtotal() - $this->discount() + $this->shipping(), 2);
     }
 
     public function isEmpty(): bool

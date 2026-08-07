@@ -48,6 +48,13 @@ new class extends Component
         $this->promoFailed = false;
     }
 
+    public ?int $zoneId = null;
+
+    public function updatedZoneId($value): void
+    {
+        app(CartService::class)->setZone($value ? (int) $value : null);
+    }
+
     protected function rules(): array
     {
         return [
@@ -85,12 +92,19 @@ new class extends Component
     {
         $cart = app(CartService::class);
 
+        // Seeded from the cart so the default zone is preselected on first
+        // load without the customer having to touch it.
+        $this->zoneId ??= $cart->zone()?->id;
+
         return [
             'lines' => $cart->lines(),
             'subtotal' => $cart->subtotal(),
             'discount' => $cart->discount(),
+            'shipping' => $cart->shipping(),
             'total' => $cart->total(),
             'appliedPromo' => $cart->promo(),
+            'zones' => \App\Models\DeliveryZone::active()->orderBy('sort_order')->get(),
+            'currentZone' => $cart->zone(),
         ];
     }
 };
@@ -155,6 +169,42 @@ new class extends Component
                                      text-sm outline-none focus:border-accent-fill"></textarea>
                     @error('shipping_address') <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p> @enderror
                 </div>
+
+                @if ($zones->isNotEmpty())
+                    <fieldset>
+                        <legend class="eyebrow">{{ __('Delivery area') }}</legend>
+
+                        <div class="mt-2 grid gap-2">
+                            @foreach ($zones as $zone)
+                                @php $zoneFee = $zone->feeFor($subtotal - $discount); @endphp
+                                <label @class([
+                                        'flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition',
+                                        'border-accent-fill bg-accent-fill/5' => (int) $zoneId === $zone->id,
+                                        'border-hairline hover:border-accent-fill/50' => (int) $zoneId !== $zone->id,
+                                    ])>
+                                    <input type="radio" wire:model.live="zoneId" value="{{ $zone->id }}"
+                                           name="zoneId"
+                                           class="size-4 accent-[#c9a96e]">
+
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block">{{ $zone->name }}</span>
+                                        @if ($zone->description)
+                                            <span class="block text-xs text-ink-muted">{{ $zone->description }}</span>
+                                        @endif
+                                    </span>
+
+                                    <span class="shrink-0 text-xs {{ $zoneFee > 0 ? 'text-ink-muted' : 'text-accent' }}">
+                                        @if ($zoneFee > 0)
+                                            {{ Money::format($zoneFee) }}
+                                        @else
+                                            {{ __('Free') }}
+                                        @endif
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </fieldset>
+                @endif
 
                 <div>
                     <label for="notes" class="eyebrow block">
@@ -241,6 +291,22 @@ new class extends Component
                         <div class="flex justify-between text-accent">
                             <dt>{{ __('Discount') }}</dt>
                             <dd>−{{ Money::format($discount) }}</dd>
+                        </div>
+                    @endif
+
+                    @if ($currentZone)
+                        <div class="flex justify-between">
+                            <dt class="text-ink-muted">
+                                {{ __('Delivery') }}
+                                <span class="text-xs">· {{ $currentZone->name }}</span>
+                            </dt>
+                            <dd>
+                                @if ($shipping > 0)
+                                    {{ Money::format($shipping) }}
+                                @else
+                                    <span class="text-accent">{{ __('Free') }}</span>
+                                @endif
+                            </dd>
                         </div>
                     @endif
 

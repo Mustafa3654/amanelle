@@ -67,12 +67,29 @@ Route::post('/contact', function (Request $request) {
         'message' => ['required', 'string', 'max:2000'],
     ]);
 
-    // Stored nowhere yet — wiring this to mail or a messages table is the
-    // next step, and silently dropping it would be worse than saying so.
-    logger()->info('Contact enquiry', $data);
+    // Stored first, emailed second. Mail is best-effort: a wrong SMTP password
+    // must not mean a customer's question disappears behind a cheerful
+    // "thanks" on screen.
+    $enquiry = \App\Models\Enquiry::create($data);
+
+    $to = \App\Models\Setting::get('contact_email') ?: config('mail.from.address');
+
+    if ($to) {
+        try {
+            \Illuminate\Support\Facades\Mail::to($to)
+                ->send(new \App\Mail\EnquiryReceived($enquiry));
+
+            $enquiry->update(['emailed_at' => now()]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Enquiry email failed', [
+                'enquiry' => $enquiry->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
 
     return back()->with('status', __('Thanks — we will get back to you shortly.'));
-})->name('contact.send');
+})->middleware('throttle:5,1')->name('contact.send');
 
 /**
  * Admin language toggle. A GET because it hangs off Filament's user menu,

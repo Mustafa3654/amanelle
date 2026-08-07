@@ -32,6 +32,7 @@ class NotificationSettings extends Page
     public function mount(): void
     {
         $this->form->fill([
+            'contact_email' => Setting::get('contact_email'),
             'telegram_token' => Setting::getEncrypted('telegram_token'),
             'telegram_chat_id' => Setting::get('telegram_chat_id'),
         ]);
@@ -42,6 +43,15 @@ class NotificationSettings extends Page
         return $schema
             ->statePath('data')
             ->components([
+                Section::make('Contact enquiries')
+                    ->description('Where messages from the contact form are sent.')
+                    ->schema([
+                        TextInput::make('contact_email')
+                            ->label('Send enquiries to')
+                            ->email()
+                            ->helperText('Replying to the email goes straight back to the customer. Every enquiry is also saved under Enquiries, so nothing is lost if mail is misconfigured.'),
+                    ]),
+
                 Section::make('Telegram')
                     ->description('The fastest way to hear about an order — it reaches your phone the moment someone checks out.')
                     ->schema([
@@ -66,6 +76,7 @@ class NotificationSettings extends Page
     {
         $data = $this->form->getState();
 
+        Setting::put('contact_email', $data['contact_email'] ?: null);
         Setting::putEncrypted('telegram_token', $data['telegram_token'] ?: null);
         Setting::put('telegram_chat_id', $data['telegram_chat_id'] ?: null);
 

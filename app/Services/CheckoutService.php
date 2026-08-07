@@ -45,6 +45,11 @@ class CheckoutService
             $promo = $this->cart->promo();
             $discount = $promo?->discountFor($subtotal) ?? 0.0;
 
+            // Re-resolved here rather than trusting the form, so a repriced or
+            // deactivated zone cannot be checked out at the old fee.
+            $zone = $this->cart->zone();
+            $shipping = $zone?->feeFor($subtotal - $discount) ?? 0.0;
+
             $order = Order::create([
                 'number' => Order::nextNumber(),
                 'customer_name' => $details['customer_name'],
@@ -55,11 +60,21 @@ class CheckoutService
                 'market' => config('amanelle.default_market'),
                 'status' => 'pending',
                 'subtotal' => $subtotal,
-                'shipping_total' => 0,
+                'shipping_total' => $shipping,
+                'delivery_zone_id' => $zone?->id,
+                /*
+                 * Snapshotted so deleting a zone does not erase where a past
+                 * order went. Stored in the fallback locale, not the
+                 * customer's: otherwise the same zone reads differently
+                 * depending on which language they happened to browse in, and
+                 * exports become impossible to group. The live translated name
+                 * is still available through the relation.
+                 */
+                'delivery_zone_name' => $zone?->getTranslation('name', config('app.fallback_locale')),
                 'promo_code' => $promo?->code,
                 'promo_code_id' => $promo?->id,
                 'discount_total' => $discount,
-                'total' => round($subtotal - $discount, 2),
+                'total' => round($subtotal - $discount + $shipping, 2),
 
                 // Snapshot what the customer was actually looking at. The LBP
                 // rate moves, and an old order must not re-price itself when

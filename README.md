@@ -1,116 +1,58 @@
-# Amanelle Beauty
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-E-commerce storefront and admin for [Amanelle](https://amanelle.store) — authentic Gulf fragrance and cosmetics, sold in Lebanon.
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-Bilingual Arabic/English with full RTL, light and dark themes, multi-currency (USD/LBP) with admin-editable rates, and an inventory model built so the shop cannot oversell.
+## About Laravel
 
-## Stack
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-| | |
-|---|---|
-| PHP | 8.3+ |
-| Framework | Laravel 13 |
-| Admin | Filament 5 |
-| Frontend | Livewire 4, Alpine, Tailwind CSS v4 |
-| Database | MySQL 8 / MariaDB 10.4+ |
-| Images | Intervention Image (GD) |
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-## Getting started
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-```bash
-git clone https://github.com/Mustafa3654/amanelle.git
-cd amanelle
-composer install
-npm install
-```
+## Learning Laravel
 
-```bash
-cp .env.example .env && php artisan key:generate
-```
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
-Create the database (`utf8mb4_unicode_ci` matters — Arabic product names sort wrong without it):
+In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-```bash
-mysql -u root -e "CREATE DATABASE amanelle_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-```
+You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
 
-```bash
-php artisan migrate --seed
-```
+## Agentic Development
+
+Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
 
 ```bash
-php artisan storage:link
+composer require laravel/boost --dev
+
+php artisan boost:install
 ```
 
-```bash
-php artisan make:filament-user
-```
+Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
-```bash
-composer dev
-```
+## Contributing
 
-The storefront is at `/`, the admin at `/admin`.
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## How stock works
+## Code of Conduct
 
-The part most worth understanding. Two numbers, never one:
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-| Column | Meaning | Changes when |
-|---|---|---|
-| `quantity` | Units physically on the shelf | **Only on delivery** |
-| `reserved` | Units promised to open orders | Order placed / cancelled |
-| `available` | `quantity - reserved` — what may be sold | derived, never stored |
+## Security Vulnerabilities
 
-Placing an order reserves stock without touching the shelf count. Marking it delivered is what finally decrements `quantity`. So with one unit in stock and one open order, the next customer sees *out of stock* rather than being allowed to buy it too.
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-Oversell is prevented by the write itself, not a prior read:
+## License
 
-```sql
-UPDATE inventories SET reserved = reserved + n
-WHERE product_variant_id = ? AND quantity - reserved >= n
-```
-
-Two checkouts in the same millisecond both read "1 available"; only one can satisfy the predicate at write time. The other gets zero affected rows and an `InsufficientStockException`, and its order rolls back whole.
-
-Every transition is guarded by its own timestamp rather than the status, so marking an order delivered twice deducts once, and cancelling an already-delivered order cannot invent stock. Pending orders release their reservation after 48 hours via `stock:release-expired`, so an abandoned checkout doesn't hold a unit hostage forever.
-
-`stock_movements` is an append-only log with signed deltas — replaying it from zero reproduces the current row.
-
-## Domain notes
-
-Modelled on what the business actually sells rather than a generic cosmetics shape.
-
-- **Longevity and projection** (*الثبات* / *الفوحان*) are rated, filterable columns. That is what this audience compares; the note pyramid is secondary.
-- **`fragrance_references`** maps a product to the designer scent it is an alternative to. Search covers it, so someone typing "Kayali" finds the cheaper version — that journey is the whole pitch.
-- **One variant table, three axes.** `products.type` selects which apply: volume and concentration for fragrance, shade and hex for makeup, volume alone for skincare.
-- **Prices are stored in USD** and converted at display time from an admin-editable rate, so changing the LBP rate reprices the catalogue without touching a product row. Orders snapshot the currency and rate the customer saw.
-
-## Features
-
-**Storefront** — search, filtering and sorting; slide-in cart; cash-on-delivery checkout with per-area delivery fees and promo codes; order tracking by number plus phone; curated Instagram rail; Open Graph tags so shared links preview as cards.
-
-**Admin** — products with per-locale tabs and a shade colour picker; one-click order fulfilment that drives stock; dashboard with revenue, low-stock alerts and charts; promo codes; delivery areas; currencies and rates; enquiries; read-only stock history; CSV export.
-
-**Images** — every upload is converted to WebP, EXIF-oriented, capped at 1600px, and stripped of metadata.
-
-## Testing
-
-```bash
-php artisan test
-```
-
-65 feature tests covering stock reservation and the oversell race, checkout, promo codes, delivery fees, browsing, image conversion, and every admin page rendering.
-
-## Environment notes
-
-Things that cost time on this build, recorded so they don't again:
-
-- **`bootstrap/app.php` runs before `.env` is loaded**, so `env()` there is always `null`. Trusted proxies must be a literal. Without them, a TLS-terminating tunnel makes Laravel emit `http://` asset URLs on an `https://` page and the browser blocks the CSS as mixed content.
-- **Blade reads `'@context'` as a directive.** Build schema.org arrays in a `@php` block.
-- **XAMPP ships MariaDB, not MySQL.** `php artisan db:show` fails against it (it queries a `performance_schema` table MariaDB lacks) — cosmetic only. SQLite is used for tests, so the fulltext index is added conditionally.
-- **PowerShell 5.1 strips `^`** from composer constraints, silently pinning exact versions. Use `5.*` style. Commit messages containing Arabic need `git commit -F <file>`.
-
-## Licence
-
-MIT.
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

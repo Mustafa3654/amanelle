@@ -18,8 +18,8 @@ Bilingual Arabic/English with full RTL, light and dark themes, multi-currency (U
 ## Getting started
 
 ```bash
-git clone https://github.com/Mustafa3654/amanelle-beauty-web.git
-cd amanelle-beauty-web
+git clone https://github.com/Mustafa3654/amanelle.git
+cd amanelle
 composer install
 npm install
 ```

@@ -115,6 +115,22 @@ class ProductForm
                         TagsInput::make('notes_base')->label('Base notes')->placeholder('Oud'),
                     ]),
 
+                Section::make('Default pricing')
+                    ->description('These prices are used as defaults when you add a product variant. You can override them per size or shade.')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('default_cost_price')
+                            ->label('Cost price')
+                            ->numeric()
+                            ->minValue(0)
+                            ->prefix('$'),
+                        TextInput::make('default_sale_price')
+                            ->label('Sale price')
+                            ->numeric()
+                            ->minValue(0)
+                            ->prefix('$'),
+                    ]),
+
                 Section::make('Skincare')
                     ->visible(fn ($get) => $get('type') === 'skincare')
                     ->columns(2)

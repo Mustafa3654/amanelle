@@ -26,6 +26,8 @@ class Product extends Model
             'notes_base' => 'array',
             'skin_types' => 'array',
             'concerns' => 'array',
+            'default_cost_price' => 'decimal:2',
+            'default_sale_price' => 'decimal:2',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'published_at' => 'datetime',

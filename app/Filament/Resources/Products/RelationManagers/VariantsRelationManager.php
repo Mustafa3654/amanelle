@@ -23,6 +23,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class VariantsRelationManager extends RelationManager
 {
@@ -32,9 +33,24 @@ class VariantsRelationManager extends RelationManager
 
     public function form(Schema $schema): Schema
     {
-        // Which axes apply depends on the parent product's type: a perfume has
-        // volume and concentration, a lipstick has a shade.
-        $type = $this->getOwnerRecord()->type;
+        // Categories are the most useful signal for staff; product type remains
+        // the fallback for generic or uncategorized products.
+        $product = $this->getOwnerRecord()->loadMissing('category');
+        $categoryText = Str::lower(collect([
+            $product->category?->getTranslation('name', 'en', false),
+            $product->category?->getTranslation('name', 'ar', false),
+            $product->category?->slug,
+        ])->filter()->implode(' '));
+        $isMakeup = Str::contains($categoryText, [
+            'makeup', 'lipstick', 'blush', 'foundation', 'concealer', 'mascara',
+            'eyeshadow', 'كحل', 'روج', 'أحمر الشفاه', 'مكياج', 'بلاشر',
+        ]);
+        $isSizeBased = ! $isMakeup && (
+            $product->type !== 'makeup' || Str::contains($categoryText, [
+                'perfume', 'fragrance', 'cologne', 'serum', 'cream', 'lotion',
+                'عطر', 'سيروم', 'كريم', 'لوشن',
+            ])
+        );
 
         return $schema->components([
             Section::make()
@@ -45,12 +61,25 @@ class VariantsRelationManager extends RelationManager
                         ->unique(ignoreRecord: true)
                         ->helperText('Your internal code. Appears on the order.'),
 
+                    TextInput::make('item_code')
+                        ->label('Item code')
+                        ->unique(ignoreRecord: true)
+                        ->helperText('Your purchase/catalogue code.'),
+
                     TextInput::make('sort_order')->numeric()->default(0),
+
+                    TextInput::make('initial_quantity')
+                        ->label('Initial quantity')
+                        ->numeric()
+                        ->minValue(0)
+                        ->default(0)
+                        ->visible(fn (string $operation): bool => $operation === 'create')
+                        ->dehydrated(),
 
                     TextInput::make('volume_ml')
                         ->label('Size (ml)')
                         ->numeric()
-                        ->visible($type !== 'makeup'),
+                        ->visible($isSizeBased),
 
                     Select::make('concentration')
                         ->options([
@@ -59,17 +88,17 @@ class VariantsRelationManager extends RelationManager
                             'mist' => 'Body mist', 'oil' => 'Oil',
                         ])
                         ->native(false)
-                        ->visible($type === 'fragrance'),
+                        ->visible($isSizeBased && $product->type === 'fragrance'),
 
                     ColorPicker::make('shade_hex')
                         ->label('Shade colour')
-                        ->visible($type === 'makeup')
+                        ->visible($isMakeup)
                         ->helperText('Becomes the swatch on the product page.'),
                 ]),
 
             Tabs::make('Shade name')
                 ->columnSpanFull()
-                ->visible($type === 'makeup')
+                ->visible($isMakeup)
                 ->tabs(collect(config('amanelle.locales'))
                     ->map(fn (array $locale, string $code) => Tab::make($locale['name'])
                         ->schema([
@@ -82,7 +111,9 @@ class VariantsRelationManager extends RelationManager
                 ->description('Entered in USD, the base currency. The storefront converts to LBP at the current rate.')
                 ->columns(2)
                 ->schema([
-                    TextInput::make('price')->numeric()->required()->prefix('$'),
+                    TextInput::make('cost_price')->label('Cost price')->numeric()->required()->prefix('$')->default($product->default_cost_price),
+
+                    TextInput::make('price')->label('Sale price')->numeric()->required()->prefix('$')->default($product->default_sale_price),
 
                     TextInput::make('compare_at_price')
                         ->label('Was (optional)')
@@ -98,6 +129,41 @@ class VariantsRelationManager extends RelationManager
 
             Toggle::make('is_active')->label('Available to buy')->default(true),
         ]);
+    }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $this->initialQuantity = (int) ($data['initial_quantity'] ?? 0);
+        unset($data['initial_quantity']);
+
+        return $data;
+    }
+
+    protected int $initialQuantity = 0;
+
+    protected function afterCreate(): void
+    {
+        $market = config('amanelle.default_market');
+        $inventory = Inventory::firstOrNew([
+            'product_variant_id' => $this->getCreatedRecord()->id,
+            'market' => $market,
+        ]);
+        $inventory->quantity = $this->initialQuantity;
+        $inventory->reserved ??= 0;
+        $inventory->low_stock_threshold ??= 5;
+        $inventory->save();
+
+        if ($this->initialQuantity > 0) {
+            StockMovement::create([
+                'product_variant_id' => $this->getCreatedRecord()->id,
+                'market' => $market,
+                'type' => 'adjust',
+                'quantity_delta' => $this->initialQuantity,
+                'reserved_delta' => 0,
+                'user_id' => auth()->id(),
+                'note' => 'Initial quantity when variant was created',
+            ]);
+        }
     }
 
     public function table(Table $table): Table

@@ -13,6 +13,7 @@ class OrderItem extends Model
     {
         return [
             'unit_price' => 'decimal:2',
+            'unit_cost' => 'decimal:2',
             'line_total' => 'decimal:2',
         ];
     }

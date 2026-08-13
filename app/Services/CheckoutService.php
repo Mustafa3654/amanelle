@@ -96,6 +96,7 @@ class CheckoutService
                     'product_name' => $variant->product?->name ?? $variant->sku,
                     'variant_label' => $variant->label(),
                     'unit_price' => $variant->price,
+                    'unit_cost' => $variant->cost_price ?? 0,
                     'quantity' => $line['quantity'],
                     'line_total' => $line['line_total'],
                 ]);

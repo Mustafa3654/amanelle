@@ -6,16 +6,13 @@ use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Schemas\Schema;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class ProfitLossReport extends Page implements HasForms
+class ProfitLossReport extends Page
 {
-    use InteractsWithForms;
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
     protected static string|\UnitEnum|null $navigationGroup = 'Reports';
     protected static ?string $navigationLabel = 'Profit & Loss';
@@ -41,9 +38,9 @@ class ProfitLossReport extends Page implements HasForms
         ];
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $form): Schema
     {
-        return $form->schema([
+        return $form->components([
             DatePicker::make('from')->label('From')->live(),
             DatePicker::make('until')->label('Until')->live(),
             Select::make('currency')->options(['all' => 'All currencies', 'USD' => 'USD', 'LBP' => 'LBP'])->live(),

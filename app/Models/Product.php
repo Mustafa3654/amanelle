@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\HasTranslations;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -43,6 +44,16 @@ class Product extends Model
                 ->merge($product->getTranslations('short_description'))
                 ->filter()
                 ->implode(' ');
+        });
+
+        static::created(function (self $product) {
+            $product->variants()->create([
+                'sku' => 'PROD-'.str($product->slug)->upper()->limit(30, '').'-'.str()->upper(Str::random(4)),
+                'item_code' => 'ITEM-'.str()->upper(Str::random(8)),
+                'price' => $product->default_sale_price ?? 0,
+                'cost_price' => $product->default_cost_price ?? 0,
+                'is_active' => true,
+            ]);
         });
     }
 

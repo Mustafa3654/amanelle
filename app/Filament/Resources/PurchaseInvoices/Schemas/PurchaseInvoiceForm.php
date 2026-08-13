@@ -53,7 +53,11 @@ class PurchaseInvoiceForm
                                 ->getSearchResultsUsing(function (string $search): array {
                                     return \App\Models\ProductVariant::query()
                                         ->with('product')
-                                        ->whereHas('product', fn ($product) => $product->where('search_text', 'like', "{$search}%"))
+                                        ->whereHas('product', function ($product) use ($search) {
+                                            $term = "%{$search}%";
+                                            $product->where('search_text', 'like', $term)
+                                                ->orWhere('name', 'like', $term);
+                                        })
                                         ->limit(50)
                                         ->get()
                                         ->mapWithKeys(fn ($variant) => [

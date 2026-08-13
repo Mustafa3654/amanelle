@@ -33,6 +33,10 @@ class CreatePurchaseInvoice extends CreateRecord {
     protected function afterCreate(): void
     {
         foreach ($this->invoiceItems as $item) {
+            \App\Models\ProductVariant::whereKey($item['product_variant_id'])->update([
+                'cost_price' => (float) $item['unit_cost'],
+            ]);
+
             $line = $this->record->items()->create($item);
             $market = config('amanelle.default_market');
             $inventory = Inventory::firstOrNew(['product_variant_id' => $line->product_variant_id, 'market' => $market]);

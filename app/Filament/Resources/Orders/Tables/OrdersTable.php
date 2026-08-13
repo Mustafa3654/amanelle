@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders\Tables;
 use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -124,6 +125,9 @@ class OrdersTable
                     }),
 
                 EditAction::make(),
+                DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->modalDescription('This permanently deletes the order and its items.'),
             ])
             ->toolbarActions([
                 /*

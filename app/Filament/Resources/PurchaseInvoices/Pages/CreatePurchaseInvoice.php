@@ -41,11 +41,6 @@ class CreatePurchaseInvoice extends CreateRecord {
 
     protected function afterCreate(): void
     {
-        $amount = (float) $this->record->total;
-
-        \App\Models\Account::whereKey($this->record->debit_account_id)->increment('balance', $amount);
-        \App\Models\Account::whereKey($this->record->credit_account_id)->increment('balance', $amount);
-
         foreach ($this->invoiceItems as $item) {
             \App\Models\ProductVariant::whereKey($item['product_variant_id'])->update([
                 'cost_price' => (float) $item['unit_cost'],
@@ -68,5 +63,19 @@ class CreatePurchaseInvoice extends CreateRecord {
                 'note' => "Purchase invoice {$this->record->invoice_number}",
             ]);
         }
+
+        // Recalculate from the persisted invoice lines so the accounting post
+        // cannot depend on a stale or empty header total.
+        $amount = (float) $this->record->items()->sum('line_total');
+        $this->record->update([
+            'subtotal' => $amount,
+            'tax' => 0,
+            'total' => $amount,
+            'debit' => $amount,
+            'credit' => $amount,
+        ]);
+
+        \App\Models\Account::whereKey($this->record->debit_account_id)->increment('balance', $amount);
+        \App\Models\Account::whereKey($this->record->credit_account_id)->increment('balance', $amount);
     }
 }

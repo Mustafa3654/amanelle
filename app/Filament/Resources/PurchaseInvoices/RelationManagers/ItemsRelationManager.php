@@ -72,22 +72,13 @@ class ItemsRelationManager extends RelationManager
 
                 $invoice = $this->getOwnerRecord()->fresh('items');
                 $total = (float) $invoice->items->sum('line_total');
-                $previousTotal = (float) $invoice->total;
                 $invoice->update([
                     'subtotal' => $total,
                     'tax' => 0,
                     'total' => $total,
-                    'debit' => $total,
-                    'credit' => $total,
+                    'debit' => 0,
+                    'credit' => 0,
                 ]);
-
-                $delta = $total - $previousTotal;
-                if ($delta !== 0.0) {
-                    if ($invoice->status !== 'cancelled') {
-                        \App\Models\Account::whereKey($invoice->debit_account_id)->increment('balance', $delta);
-                        \App\Models\Account::whereKey($invoice->credit_account_id)->decrement('balance', $delta);
-                    }
-                }
 
                 Notification::make()->title('Stock received')->success()->send();
             }),

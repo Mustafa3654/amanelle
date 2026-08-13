@@ -16,9 +16,8 @@ class PurchaseInvoiceForm
     {
         return $schema->components([
             Section::make('Purchase invoice')->columnSpanFull()->columns(6)->schema([
-                Select::make('supplier_id')->relationship('supplier', 'name')->searchable()->preload()->required()->columnSpan(2),
+                TextInput::make('invoice_number')->label('Invoice number')->readOnly()->dehydrated(false),
                 DatePicker::make('invoice_date')->required()->default(now()),
-                DatePicker::make('due_date')->label('Due date'),
                 Select::make('currency')
                     ->options(['USD' => 'USD', 'LBP' => 'LBP'])
                     ->default('USD')
@@ -38,23 +37,6 @@ class PurchaseInvoiceForm
                         $set('credit_account_id', $accounts->firstWhere('type', 'credit')?->id);
                     })
                     ->required(),
-                Select::make('status')->options(['unpaid' => 'Unpaid', 'partially_paid' => 'Partially paid', 'paid' => 'Paid', 'cancelled' => 'Cancelled'])->default('unpaid')->required(),
-                Select::make('debit_account_id')
-                    ->label('Debit account')
-                    ->options(fn ($get) => \App\Models\Account::query()
-                        ->where('currency', $get('currency') ?: 'USD')
-                        ->where('is_active', true)
-                        ->get()
-                        ->mapWithKeys(fn ($account) => [$account->id => "{$account->account_number} · {$account->name}"]))
-                    ->searchable()->preload()->required(),
-                Select::make('credit_account_id')
-                    ->label('Credit account')
-                    ->options(fn ($get) => \App\Models\Account::query()
-                        ->where('currency', $get('currency') ?: 'USD')
-                        ->where('is_active', true)
-                        ->get()
-                        ->mapWithKeys(fn ($account) => [$account->id => "{$account->account_number} · {$account->name}"]))
-                    ->searchable()->preload()->required(),
                 Textarea::make('notes')->columnSpan(6)->rows(2),
             ]),
 

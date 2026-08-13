@@ -69,6 +69,7 @@ class PurchaseInvoiceForm
                                     ? "{$variant->item_code} · {$variant->product?->name} · {$variant->label()}"
                                     : null)
                                 ->searchable()
+                                ->searchDebounce(0)
                                 ->live()
                                 ->afterStateUpdated(function ($state, $set, $get) {
                                     $variant = \App\Models\ProductVariant::find($state);

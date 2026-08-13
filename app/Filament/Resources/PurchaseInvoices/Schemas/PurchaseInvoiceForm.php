@@ -16,26 +16,11 @@ class PurchaseInvoiceForm
     {
         return $schema->components([
             Section::make('Purchase invoice')->columnSpanFull()->columns(6)->schema([
-                TextInput::make('invoice_number')->label('Invoice number')->readOnly()->dehydrated(false),
                 DatePicker::make('invoice_date')->required()->default(now()),
                 Select::make('currency')
                     ->options(['USD' => 'USD', 'LBP' => 'LBP'])
                     ->default('USD')
                     ->live()
-                    ->afterStateHydrated(function ($state, $set) {
-                        $accounts = \App\Models\Account::query()->where('currency', $state ?: 'USD')->where('is_active', true)->get();
-                        $set('debit_account_id', $accounts->firstWhere('type', 'debit')?->id);
-                        $set('credit_account_id', $accounts->firstWhere('type', 'credit')?->id);
-                    })
-                    ->afterStateUpdated(function ($state, $set) {
-                        $accounts = \App\Models\Account::query()
-                            ->where('currency', $state)
-                            ->where('is_active', true)
-                            ->get();
-
-                        $set('debit_account_id', $accounts->firstWhere('type', 'debit')?->id);
-                        $set('credit_account_id', $accounts->firstWhere('type', 'credit')?->id);
-                    })
                     ->required(),
                 Textarea::make('notes')->columnSpan(6)->rows(2),
             ]),
@@ -54,7 +39,7 @@ class PurchaseInvoiceForm
                                     ->with('product')
                                     ->get()
                                     ->mapWithKeys(fn ($variant) => [
-                                        $variant->id => "{$variant->product?->name} · {$variant->label()}",
+                                        $variant->id => (($variant->product?->getTranslation('name', 'en', false) ?: $variant->product?->getTranslation('name', 'ar', false) ?: 'Unnamed product').' · '.$variant->label()),
                                     ])
                                     ->all())
                                 ->getSearchResultsUsing(function (string $search): array {
@@ -68,12 +53,12 @@ class PurchaseInvoiceForm
                                         ->limit(50)
                                         ->get()
                                         ->mapWithKeys(fn ($variant) => [
-                                            $variant->id => "{$variant->item_code} · {$variant->product?->name} · {$variant->label()}",
+                                            $variant->id => (($variant->product?->getTranslation('name', 'en', false) ?: $variant->product?->getTranslation('name', 'ar', false) ?: 'Unnamed product').' · '.$variant->label()),
                                         ])
                                         ->all();
                                 })
                                 ->getOptionLabelUsing(fn ($value): ?string => ($variant = \App\Models\ProductVariant::with('product')->find($value))
-                                    ? "{$variant->item_code} · {$variant->product?->name} · {$variant->label()}"
+                                    ? (($variant->product?->getTranslation('name', 'en', false) ?: $variant->product?->getTranslation('name', 'ar', false) ?: 'Unnamed product').' · '.$variant->label())
                                     : null)
                                 ->searchable()
                                 ->preload()

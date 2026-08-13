@@ -20,7 +20,7 @@ class ProfitLossReport extends Page implements HasForms
     protected static string|\UnitEnum|null $navigationGroup = 'Reports';
     protected static ?string $navigationLabel = 'Profit & Loss';
     protected static ?string $title = 'Profit & Loss Report';
-    protected static string $view = 'filament.pages.profit-loss-report';
+    protected string $view = 'filament.pages.profit-loss-report';
 
     public ?string $from = null;
     public ?string $until = null;

@@ -81,9 +81,22 @@ class AdminPanelTest extends TestCase
         // inheriting stock would invent units that do not exist.
         $this->assertFalse($copy->is_active);
         $this->assertFalse($copy->is_featured);
-        $this->assertCount(1, $copy->variants);
-        $this->assertNotSame($variant->sku, $copy->variants->first()->sku);
-        $this->assertSame(0, $copy->variants->first()->availableIn('LB'));
+
+        // Mirrors the source exactly. Creating a product now also generates a
+        // default variant, so the source carries that plus the explicit one —
+        // the copy must have the same set, not a placeholder on top of them.
+        $this->assertCount($product->variants()->count(), $copy->variants);
+
+        // SKU and item_code are both unique columns.
+        $this->assertEmpty(
+            $copy->variants->pluck('sku')->intersect($product->variants->pluck('sku'))
+        );
+        $this->assertEmpty(
+            $copy->variants->pluck('item_code')->filter()
+                ->intersect($product->variants->pluck('item_code')->filter())
+        );
+
+        $this->assertSame(0, $copy->variants->sum(fn ($v) => $v->availableIn('LB')));
     }
 
     public function test_bulk_publishing_works(): void

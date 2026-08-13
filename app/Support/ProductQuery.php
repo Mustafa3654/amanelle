@@ -64,12 +64,19 @@ class ProductQuery
         // Price bounds are in the base currency, matching how prices are
         // stored; the form converts what the customer typed before it gets
         // here.
+        // Scoped to active variants, like the sort. A product carrying an
+        // inactive variant — a placeholder awaiting a price, or a discontinued
+        // size — must not match on a price the shop will never sell it at.
         if (! empty($filters['min_price'])) {
-            $query->whereHas('variants', fn (Builder $v) => $v->where('price', '>=', (float) $filters['min_price']));
+            $query->whereHas('variants', fn (Builder $v) => $v
+                ->where('is_active', true)
+                ->where('price', '>=', (float) $filters['min_price']));
         }
 
         if (! empty($filters['max_price'])) {
-            $query->whereHas('variants', fn (Builder $v) => $v->where('price', '<=', (float) $filters['max_price']));
+            $query->whereHas('variants', fn (Builder $v) => $v
+                ->where('is_active', true)
+                ->where('price', '<=', (float) $filters['max_price']));
         }
 
         return static::sort($query, $filters['sort'] ?? 'featured');

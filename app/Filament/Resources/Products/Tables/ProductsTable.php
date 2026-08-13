@@ -123,10 +123,21 @@ class ProductsTable
                             ->all());
                         $copy->save();
 
+                        // Saving fires the created hook, which adds a default
+                        // variant. The copy is about to receive the original's
+                        // real variants, so that placeholder would be a
+                        // phantom extra line.
+                        $copy->variants()->delete();
+
                         foreach ($source->variants as $variant) {
                             $newVariant = $variant->replicate();
                             $newVariant->product_id = $copy->id;
+
+                            // Both are unique columns, so a straight copy
+                            // collides on the second one.
                             $newVariant->sku = $variant->sku.'-C'.Str::upper(Str::random(3));
+                            $newVariant->item_code = 'ITEM-'.Str::upper(Str::random(8));
+
                             $newVariant->save();
                         }
 

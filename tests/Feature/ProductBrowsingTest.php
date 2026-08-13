@@ -157,10 +157,20 @@ class ProductBrowsingTest extends TestCase
             ], 10 + $i);
         }
 
-        $this->get('/shop?gender=women&sort=price_asc')
-            ->assertOk()
-            // withQueryString keeps the filter on page 2 rather than silently
-            // resetting the listing.
-            ->assertSee('gender=women', escape: false);
+        $response = $this->get('/shop?gender=women&sort=price_asc')->assertOk();
+
+        $products = $response->viewData('products');
+
+        $this->assertSame(2, $products->lastPage());
+
+        /*
+         * Asserted on the paginator rather than the rendered HTML. The links
+         * are drawn by whichever pagination view is registered, and Filament
+         * sets that globally when its panel boots — which in a full test run
+         * happens before this file and changes the markup. The paginator URL
+         * is the authoritative statement of "the filter survives page 2".
+         */
+        $this->assertStringContainsString('gender=women', $products->url(2));
+        $this->assertStringContainsString('sort=price_asc', $products->url(2));
     }
 }

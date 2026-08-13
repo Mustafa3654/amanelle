@@ -16,20 +16,29 @@ class Money
 {
     public const SESSION_KEY = 'currency';
 
-    /**
-     * Memoised per request rather than cached across them. There are two rows;
-     * the query is trivial, and serialising Eloquent models into the cache
-     * store brings them back as __PHP_Incomplete_Class the moment the class
-     * map shifts.
-     *
-     * @var Collection<int, Currency>|null
-     */
-    private static ?Collection $currencies = null;
+    private const CACHE_KEY = 'amanelle.currencies';
 
-    /** @return Collection<int, Currency> */
+    /**
+     * Memoised for the life of one request, not cached across them. There are
+     * two rows; the query is trivial, and serialising Eloquent models into the
+     * cache store brings them back as __PHP_Incomplete_Class the moment the
+     * class map shifts.
+     *
+     * Held in the container rather than a static property: a static survives
+     * for the whole PHP process, which in the test suite means one test's
+     * currencies leak into the next and failures depend on run order. The
+     * container is rebuilt per request and per test, so this dies when it
+     * should.
+     *
+     * @return Collection<int, Currency>
+     */
     public static function currencies(): Collection
     {
-        return self::$currencies ??= Currency::active()->orderBy('sort_order')->get();
+        if (! app()->bound(self::CACHE_KEY)) {
+            app()->instance(self::CACHE_KEY, Currency::active()->orderBy('sort_order')->get());
+        }
+
+        return app(self::CACHE_KEY);
     }
 
     public static function base(): ?Currency
@@ -75,6 +84,6 @@ class Money
 
     public static function flush(): void
     {
-        self::$currencies = null;
+        app()->forgetInstance(self::CACHE_KEY);
     }
 }

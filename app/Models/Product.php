@@ -46,13 +46,24 @@ class Product extends Model
                 ->implode(' ');
         });
 
+        /*
+         * Every product needs at least one variant to be sellable, so one is
+         * created up front from the default prices.
+         *
+         * It is only activated when a sale price was actually given. Marking a
+         * zero-priced variant active put it straight on the storefront at
+         * 0.00 — buyable, for free, the moment the product was saved. An
+         * inactive variant is invisible to the shop and waits for a price.
+         */
         static::created(function (self $product) {
+            $price = (float) ($product->default_sale_price ?? 0);
+
             $product->variants()->create([
                 'sku' => 'PROD-'.str($product->slug)->upper()->limit(30, '').'-'.str()->upper(Str::random(4)),
                 'item_code' => 'ITEM-'.str()->upper(Str::random(8)),
-                'price' => $product->default_sale_price ?? 0,
+                'price' => $price,
                 'cost_price' => $product->default_cost_price ?? 0,
-                'is_active' => true,
+                'is_active' => $price > 0,
             ]);
         });
     }

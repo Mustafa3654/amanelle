@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('purchase_invoices', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_number');
-            $table->string('supplier_name');
             $table->date('invoice_date');
             $table->string('currency', 3)->default('USD');
             $table->decimal('subtotal', 12, 2)->default(0);

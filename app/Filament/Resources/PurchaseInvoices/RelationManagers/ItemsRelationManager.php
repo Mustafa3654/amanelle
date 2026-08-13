@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Actions\CreateAction;
+use Illuminate\Support\Facades\DB;
 
 class ItemsRelationManager extends RelationManager
 {
@@ -68,6 +69,24 @@ class ItemsRelationManager extends RelationManager
                     'user_id' => auth()->id(),
                     'note' => "Purchase invoice {$record->invoice?->invoice_number}",
                 ]);
+
+                $invoice = $this->getOwnerRecord()->fresh('items');
+                $total = (float) $invoice->items->sum('line_total');
+                $previousTotal = (float) $invoice->total;
+                $invoice->update([
+                    'subtotal' => $total,
+                    'tax' => 0,
+                    'total' => $total,
+                    'debit' => $total,
+                    'credit' => $total,
+                ]);
+
+                $delta = $total - $previousTotal;
+                if ($delta !== 0.0) {
+                    \App\Models\Account::whereKey($invoice->debit_account_id)->increment('balance', $delta);
+                    \App\Models\Account::whereKey($invoice->credit_account_id)->increment('balance', $delta);
+                }
+
                 Notification::make()->title('Stock received')->success()->send();
             }),
         ]);

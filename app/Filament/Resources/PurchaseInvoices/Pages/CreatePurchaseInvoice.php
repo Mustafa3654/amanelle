@@ -43,11 +43,11 @@ class CreatePurchaseInvoice extends CreateRecord {
 
             $line = $this->record->items()->create($item);
             $market = config('amanelle.default_market');
-            $inventory = Inventory::firstOrNew(['product_variant_id' => $line->product_variant_id, 'market' => $market]);
-            $inventory->quantity = ($inventory->quantity ?? 0) + $line->quantity;
-            $inventory->reserved ??= 0;
-            $inventory->low_stock_threshold ??= 5;
-            $inventory->save();
+            $inventory = Inventory::firstOrCreate(
+                ['product_variant_id' => $line->product_variant_id, 'market' => $market],
+                ['quantity' => 0, 'reserved' => 0, 'low_stock_threshold' => 5],
+            );
+            $inventory->increment('quantity', (int) $line->quantity);
             StockMovement::create([
                 'product_variant_id' => $line->product_variant_id,
                 'market' => $market,

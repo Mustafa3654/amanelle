@@ -122,10 +122,19 @@ class PurchaseInvoiceForm
                             $subtotal = collect($state ?? [])->sum(fn ($item) => (float) ($item['line_total'] ?? 0));
                             $set('subtotal', $subtotal);
                             $set('total', $subtotal);
+                            $set('invoice_total_display', $subtotal);
                             $set('debit', $subtotal);
                             $set('credit', $subtotal);
                         })
                         ->itemLabel(fn (array $state): ?string => $state['product_variant_id'] ?? null ? 'Purchased item' : 'New item'),
+
+                    TextInput::make('invoice_total_display')
+                        ->label('Invoice total')
+                        ->prefix('$')
+                        ->default(0)
+                        ->readOnly()
+                        ->dehydrated(false)
+                        ->extraAttributes(['class' => 'text-lg font-semibold']),
                 ]),
         ]);
     }

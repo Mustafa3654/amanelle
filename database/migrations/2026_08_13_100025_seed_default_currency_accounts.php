@@ -8,10 +8,10 @@ return new class extends Migration
     public function up(): void
     {
         $accounts = [
-            ['account_number' => '601010001', 'name' => 'USD Purchases', 'type' => 'debit', 'currency' => 'USD'],
-            ['account_number' => '211010001', 'name' => 'USD Accounts Payable', 'type' => 'credit', 'currency' => 'USD'],
-            ['account_number' => '601010002', 'name' => 'LBP Purchases', 'type' => 'debit', 'currency' => 'LBP'],
-            ['account_number' => '211010002', 'name' => 'LBP Accounts Payable', 'type' => 'credit', 'currency' => 'LBP'],
+            ['account_number' => '601010001', 'name' => 'USD Purchases', 'type' => 'purchases', 'currency' => 'USD'],
+            ['account_number' => '211010001', 'name' => 'USD Accounts Payable', 'type' => 'payable', 'currency' => 'USD'],
+            ['account_number' => '601010002', 'name' => 'LBP Purchases', 'type' => 'purchases', 'currency' => 'LBP'],
+            ['account_number' => '211010002', 'name' => 'LBP Accounts Payable', 'type' => 'payable', 'currency' => 'LBP'],
         ];
 
         foreach ($accounts as $account) {

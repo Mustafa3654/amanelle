@@ -19,23 +19,23 @@ class DeliveryZonesTable
             ->reorderable('sort_order')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Area')
+                    ->label(__('Area'))
                     ->description(fn (DeliveryZone $record) => $record->description)
                     ->searchable(),
 
-                TextColumn::make('fee')
+                TextColumn::make('fee')->label(__('Fee'))
                     ->money('USD')
                     ->alignEnd()
                     ->formatStateUsing(fn ($state) => (float) $state === 0.0 ? 'Free' : '$'.number_format((float) $state, 2)),
 
                 TextColumn::make('free_above')
-                    ->label('Free over')
+                    ->label(__('Free over'))
                     ->money('USD')
-                    ->placeholder('—')
+                    ->placeholder(__('—'))
                     ->alignEnd(),
 
-                IconColumn::make('is_default')->label('Default')->boolean(),
-                IconColumn::make('is_active')->label('Offered')->boolean(),
+                IconColumn::make('is_default')->label(__('Default'))->boolean(),
+                IconColumn::make('is_active')->label(__('Offered'))->boolean(),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -45,9 +45,9 @@ class DeliveryZonesTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->emptyStateHeading('No delivery areas yet')
+            ->emptyStateHeading(__('No delivery areas yet'))
             // Without at least one zone the checkout shows no options and
             // every order ships free, so say so rather than looking fine.
-            ->emptyStateDescription('Until you add one, checkout charges no delivery fee.');
+            ->emptyStateDescription(__('Until you add one, checkout charges no delivery fee.'));
     }
 }

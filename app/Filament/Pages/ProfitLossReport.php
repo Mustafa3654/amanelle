@@ -14,9 +14,18 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ProfitLossReport extends Page
 {
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
-    protected static string|\UnitEnum|null $navigationGroup = 'Reports';
-    protected static ?string $navigationLabel = 'Profit & Loss';
-    protected static ?string $title = 'Profit & Loss Report';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Reports');
+    }
+    public static function getNavigationLabel(): string
+    {
+        return __('Profit & Loss');
+    }
+    public function getTitle(): string
+    {
+        return __('Profit & Loss Report');
+    }
     protected string $view = 'filament.pages.profit-loss-report';
 
     public ?string $from = null;
@@ -33,7 +42,7 @@ class ProfitLossReport extends Page
     {
         return [
             Action::make('export')
-                ->label('Export CSV')
+                ->label(__('Export CSV'))
                 ->action(fn () => $this->export()),
         ];
     }
@@ -41,9 +50,9 @@ class ProfitLossReport extends Page
     public function form(Schema $form): Schema
     {
         return $form->components([
-            DatePicker::make('from')->label('From')->live(),
-            DatePicker::make('until')->label('Until')->live(),
-            Select::make('currency')->options(['all' => 'All currencies', 'USD' => 'USD', 'LBP' => 'LBP'])->live(),
+            DatePicker::make('from')->label(__('From'))->live(),
+            DatePicker::make('until')->label(__('Until'))->live(),
+            Select::make('currency')->label(__('Currency'))->options(['all' => __('All currencies'), 'USD' => 'USD', 'LBP' => 'LBP'])->live(),
         ])->statePath('data');
     }
 

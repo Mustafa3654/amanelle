@@ -18,13 +18,31 @@ class PromoCodeResource extends Resource
 {
     protected static ?string $model = PromoCode::class;
 
+    public static function getModelLabel(): string
+    {
+        return __('Promo code');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Promo codes');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTicket;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Settings');
+    }
+
 
     protected static ?int $navigationSort = 5;
 
-    protected static ?string $navigationLabel = 'Promo codes';
+    public static function getNavigationLabel(): string
+    {
+        return __('Promo codes');
+    }
+
 
     protected static ?string $recordTitleAttribute = 'code';
 

@@ -41,7 +41,7 @@ class SalesOverview extends StatsOverviewWidget
                 ->color($change === null ? 'gray' : ($change >= 0 ? 'success' : 'danger')),
 
             Stat::make('Orders to fulfil', $awaiting)
-                ->description('Pending, processing or shipped')
+                ->description(__('Pending, processing or shipped'))
                 ->descriptionIcon('heroicon-m-clock')
                 ->color($awaiting > 0 ? 'warning' : 'success'),
 

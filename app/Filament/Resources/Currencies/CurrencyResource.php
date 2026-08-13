@@ -18,11 +18,27 @@ class CurrencyResource extends Resource
 {
     protected static ?string $model = Currency::class;
 
+    public static function getModelLabel(): string
+    {
+        return __('Currency');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Currencies');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static ?string $navigationLabel = 'Currencies & rates';
+    public static function getNavigationLabel(): string
+    {
+        return __('Currencies & rates');
+    }
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Settings');
+    }
 
     protected static ?int $navigationSort = 10;
 

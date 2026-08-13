@@ -26,7 +26,7 @@ class ProductsTable
             ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Product')
+                    ->label(__('Product'))
                     ->description(fn ($record) => $record->brand?->name)
                     // The name lives in a JSON column, so searching it means
                     // going through the maintained search_text index rather
@@ -35,7 +35,7 @@ class ProductsTable
                         ->where('search_text', 'like', "%{$search}%"))
                     ->wrap(),
 
-                TextColumn::make('type')
+                TextColumn::make('type')->label(__('Type'))
                     ->badge()
                     ->color(fn (string $state) => match ($state) {
                         'fragrance' => 'warning',
@@ -44,19 +44,19 @@ class ProductsTable
                     }),
 
                 TextColumn::make('category.slug')
-                    ->label('Category')
+                    ->label(__('Category'))
                     ->formatStateUsing(fn ($record) => $record->category?->name)
                     ->toggleable(),
 
                 TextColumn::make('variants_count')
                     ->counts('variants')
-                    ->label('Variants')
+                    ->label(__('Variants'))
                     ->alignEnd(),
 
                 // Sums sellable units across markets. The number the shop can
                 // actually offer, not the raw shelf count.
                 TextColumn::make('available')
-                    ->label('Available')
+                    ->label(__('Available'))
                     ->alignEnd()
                     ->state(fn ($record) => $record->variants
                         ->flatMap->inventories
@@ -64,27 +64,27 @@ class ProductsTable
                     ->badge()
                     ->color(fn ($state) => $state === 0 ? 'danger' : ($state <= 5 ? 'warning' : 'success')),
 
-                IconColumn::make('is_active')->label('Published')->boolean(),
-                IconColumn::make('is_featured')->label('Featured')->boolean(),
+                IconColumn::make('is_active')->label(__('Published'))->boolean(),
+                IconColumn::make('is_featured')->label(__('Featured'))->boolean(),
 
-                TextColumn::make('published_at')->dateTime('d M Y')->sortable()->toggleable(),
+                TextColumn::make('published_at')->label(__('Published at'))->dateTime('d M Y')->sortable()->toggleable(),
             ])
             ->filters([
-                SelectFilter::make('type')
+                SelectFilter::make('type')->label(__('Type'))
                     ->options([
-                        'fragrance' => 'Fragrance',
-                        'skincare' => 'Skincare',
-                        'makeup' => 'Makeup',
+                        'fragrance' => __('Fragrance'),
+                        'skincare' => __('Skincare'),
+                        'makeup' => __('Makeup'),
                     ]),
 
-                SelectFilter::make('brand')
+                SelectFilter::make('brand')->label(__('Brand'))
                     ->relationship('brand', 'slug')
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->name)
                     ->searchable()
                     ->preload(),
 
-                TernaryFilter::make('is_active')->label('Published'),
-                TernaryFilter::make('is_featured')->label('Featured'),
+                TernaryFilter::make('is_active')->label(__('Published')),
+                TernaryFilter::make('is_featured')->label(__('Featured')),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -100,11 +100,11 @@ class ProductsTable
                  * inheriting the original's stock would invent units.
                  */
                 Action::make('duplicate')
-                    ->label('Duplicate')
+                    ->label(__('Duplicate'))
                     ->icon('heroicon-o-document-duplicate')
                     ->color('gray')
                     ->requiresConfirmation()
-                    ->modalDescription('Creates an unpublished copy with the same variants and prices, and no stock.')
+                    ->modalDescription(__('Creates an unpublished copy with the same variants and prices, and no stock.'))
                     ->action(function (Product $record) {
                         /*
                          * Reloaded clean before replicating: the row handed to
@@ -142,8 +142,8 @@ class ProductsTable
                         }
 
                         Notification::make()
-                            ->title('Duplicated')
-                            ->body('The copy is unpublished with no stock. Edit it, then publish.')
+                            ->title(__('Duplicated'))
+                            ->body(__('The copy is unpublished with no stock. Edit it, then publish.'))
                             ->success()
                             ->send();
 
@@ -153,14 +153,14 @@ class ProductsTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     BulkAction::make('publish')
-                        ->label('Publish')
+                        ->label(__('Publish'))
                         ->icon('heroicon-o-eye')
                         ->requiresConfirmation()
                         ->action(fn ($records) => $records->each->update(['is_active' => true]))
                         ->deselectRecordsAfterCompletion(),
 
                     BulkAction::make('unpublish')
-                        ->label('Unpublish')
+                        ->label(__('Unpublish'))
                         ->icon('heroicon-o-eye-slash')
                         ->color('warning')
                         ->requiresConfirmation()
@@ -168,13 +168,13 @@ class ProductsTable
                         ->deselectRecordsAfterCompletion(),
 
                     BulkAction::make('feature')
-                        ->label('Feature on the homepage')
+                        ->label(__('Feature on the homepage'))
                         ->icon('heroicon-o-star')
                         ->action(fn ($records) => $records->each->update(['is_featured' => true]))
                         ->deselectRecordsAfterCompletion(),
 
                     BulkAction::make('unfeature')
-                        ->label('Remove from the homepage')
+                        ->label(__('Remove from the homepage'))
                         ->icon('heroicon-o-star')
                         ->color('gray')
                         ->action(fn ($records) => $records->each->update(['is_featured' => false]))

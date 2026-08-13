@@ -21,24 +21,24 @@ class EnquiriesTable
             ->poll('60s')
             ->columns([
                 TextColumn::make('created_at')
-                    ->label('Received')
+                    ->label(__('Received'))
                     ->since()
                     ->sortable()
                     // Unread ones should be findable at a glance.
                     ->weight(fn (Enquiry $record) => $record->read_at ? null : 'bold'),
 
-                TextColumn::make('name')
+                TextColumn::make('name')->label(__('Name'))
                     ->searchable()
                     ->description(fn (Enquiry $record) => $record->email)
                     ->weight(fn (Enquiry $record) => $record->read_at ? null : 'bold'),
 
-                TextColumn::make('message')
+                TextColumn::make('message')->label(__('Message'))
                     ->limit(70)
                     ->wrap()
                     ->searchable(),
 
                 IconColumn::make('emailed_at')
-                    ->label('Emailed')
+                    ->label(__('Emailed'))
                     ->boolean()
                     // A false here means mail is misconfigured, and the only
                     // copy of the message is this row.
@@ -48,9 +48,9 @@ class EnquiriesTable
             ])
             ->filters([
                 TernaryFilter::make('read_at')
-                    ->label('Read')
+                    ->label(__('Read'))
                     ->nullable()
-                    ->placeholder('All')
+                    ->placeholder(__('All'))
                     ->trueLabel('Read')
                     ->falseLabel('Unread'),
             ])
@@ -62,7 +62,7 @@ class EnquiriesTable
                         ?: $record->update(['read_at' => now()])),
 
                 Action::make('reply')
-                    ->label('Reply')
+                    ->label(__('Reply'))
                     ->icon('heroicon-o-envelope')
                     ->color('gray')
                     ->url(fn (Enquiry $record) => 'mailto:'.$record->email.'?subject='.rawurlencode('Re: your message to Amanelle'))
@@ -73,6 +73,6 @@ class EnquiriesTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->emptyStateHeading('No enquiries yet');
+            ->emptyStateHeading(__('No enquiries yet'));
     }
 }

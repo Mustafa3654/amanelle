@@ -20,20 +20,20 @@ class PromoCodeForm
             Section::make()
                 ->columns(2)
                 ->schema([
-                    TextInput::make('code')
+                    TextInput::make('code')->label(__('Code'))
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->extraInputAttributes(['style' => 'text-transform: uppercase'])
-                        ->helperText('Case does not matter — customers can type it however they like.'),
+                        ->helperText(__('Case does not matter — customers can type it however they like.')),
 
-                    Toggle::make('is_active')->label('Active')->default(true)->inline(false),
+                    Toggle::make('is_active')->label(__('Active'))->default(true)->inline(false),
                 ]),
 
-            Section::make('Discount')
+            Section::make(__('Discount'))
                 ->columns(2)
                 ->schema([
-                    Select::make('type')
-                        ->options(['percent' => 'Percentage off', 'fixed' => 'Fixed amount off'])
+                    Select::make('type')->label(__('Type'))
+                        ->options(['percent' => __('Percentage off'), 'fixed' => __('Fixed amount off')])
                         ->required()
                         ->default('percent')
                         ->native(false)
@@ -49,37 +49,37 @@ class PromoCodeForm
                         ->maxValue(fn ($get) => $get('type') === 'percent' ? 100 : null),
 
                     TextInput::make('min_subtotal')
-                        ->label('Minimum spend')
+                        ->label(__('Minimum spend'))
                         ->numeric()
                         ->prefix('$')
-                        ->helperText('Blank for no minimum.'),
+                        ->helperText(__('Blank for no minimum.')),
 
                     TextInput::make('max_discount')
-                        ->label('Cap the discount at')
+                        ->label(__('Cap the discount at'))
                         ->numeric()
                         ->prefix('$')
                         ->visible(fn ($get) => $get('type') === 'percent')
                         // A percentage with no ceiling can wipe out the margin
                         // on a large order.
-                        ->helperText('Stops a percentage getting expensive on big orders.'),
+                        ->helperText(__('Stops a percentage getting expensive on big orders.')),
                 ]),
 
-            Section::make('Limits')
+            Section::make(__('Limits'))
                 ->columns(3)
                 ->schema([
                     DateTimePicker::make('starts_at')
-                        ->label('Valid from')
-                        ->helperText('Blank means immediately.'),
+                        ->label(__('Valid from'))
+                        ->helperText(__('Blank means immediately.')),
 
                     DateTimePicker::make('expires_at')
-                        ->label('Expires')
-                        ->helperText('Blank means never.'),
+                        ->label(__('Expires'))
+                        ->helperText(__('Blank means never.')),
 
                     TextInput::make('max_uses')
-                        ->label('Maximum redemptions')
+                        ->label(__('Maximum redemptions'))
                         ->numeric()
                         ->minValue(1)
-                        ->helperText('Blank means unlimited.'),
+                        ->helperText(__('Blank means unlimited.')),
                 ]),
 
             Tabs::make('Description')
@@ -88,9 +88,9 @@ class PromoCodeForm
                     ->map(fn (array $locale, string $code) => Tab::make($locale['name'])
                         ->schema([
                             Textarea::make("description.{$code}")
-                                ->label('Internal note')
+                                ->label(__('Internal note'))
                                 ->rows(2)
-                                ->helperText('For your reference — not shown to customers.'),
+                                ->helperText(__('For your reference — not shown to customers.')),
                         ]))
                     ->values()
                     ->all()),

@@ -18,13 +18,31 @@ class DeliveryZoneResource extends Resource
 {
     protected static ?string $model = DeliveryZone::class;
 
+    public static function getModelLabel(): string
+    {
+        return __('Delivery area');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Delivery areas');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Settings');
+    }
+
 
     protected static ?int $navigationSort = 4;
 
-    protected static ?string $navigationLabel = 'Delivery areas';
+    public static function getNavigationLabel(): string
+    {
+        return __('Delivery areas');
+    }
+
 
     protected static ?string $recordTitleAttribute = 'id';
 

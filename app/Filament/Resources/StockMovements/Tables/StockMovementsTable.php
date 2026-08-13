@@ -14,14 +14,14 @@ class StockMovementsTable
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('created_at')->label('When')->dateTime('d M Y H:i')->sortable(),
+                TextColumn::make('created_at')->label(__('When'))->dateTime('d M Y H:i')->sortable(),
 
                 TextColumn::make('variant.product.name')
-                    ->label('Product')
+                    ->label(__('Product'))
                     ->description(fn (StockMovement $r) => $r->variant?->sku)
                     ->wrap(),
 
-                TextColumn::make('type')
+                TextColumn::make('type')->label(__('Type'))
                     ->badge()
                     ->color(fn (string $state) => match ($state) {
                         'reserve' => 'warning',
@@ -31,43 +31,43 @@ class StockMovementsTable
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state) => match ($state) {
-                        'reserve' => 'Reserved for an order',
-                        'release' => 'Released back on sale',
-                        'fulfil' => 'Left the shelf',
-                        'adjust' => 'Manual correction',
+                        'reserve' => __('Reserved for an order'),
+                        'release' => __('Released back on sale'),
+                        'fulfil' => __('Left the shelf'),
+                        'adjust' => __('Manual correction'),
                         default => $state,
                     }),
 
                 // Signed, so replaying the log from zero reproduces the row.
                 TextColumn::make('quantity_delta')
-                    ->label('Shelf')
+                    ->label(__('Shelf'))
                     ->alignEnd()
                     ->formatStateUsing(fn (int $state) => $state > 0 ? "+{$state}" : (string) $state)
                     ->color(fn (int $state) => $state < 0 ? 'danger' : ($state > 0 ? 'success' : 'gray')),
 
                 TextColumn::make('reserved_delta')
-                    ->label('Reserved')
+                    ->label(__('Reserved'))
                     ->alignEnd()
                     ->formatStateUsing(fn (int $state) => $state > 0 ? "+{$state}" : (string) $state)
                     ->color('gray'),
 
                 TextColumn::make('order.number')
-                    ->label('Order')
-                    ->placeholder('—')
+                    ->label(__('Order'))
+                    ->placeholder(__('—'))
                     ->url(fn (StockMovement $r) => $r->order
                         ? \App\Filament\Resources\Orders\OrderResource::getUrl('edit', ['record' => $r->order])
                         : null),
 
-                TextColumn::make('user.name')->label('By')->placeholder('System'),
+                TextColumn::make('user.name')->label(__('By'))->placeholder(__('System')),
 
-                TextColumn::make('note')->limit(40)->placeholder('—')->toggleable(),
+                TextColumn::make('note')->label(__('Note'))->limit(40)->placeholder(__('—'))->toggleable(),
             ])
             ->filters([
-                SelectFilter::make('type')->options([
-                    'reserve' => 'Reserved',
-                    'release' => 'Released',
-                    'fulfil' => 'Left the shelf',
-                    'adjust' => 'Manual correction',
+                SelectFilter::make('type')->label(__('Type'))->options([
+                    'reserve' => __('Reserved'),
+                    'release' => __('Released'),
+                    'fulfil' => __('Left the shelf'),
+                    'adjust' => __('Manual correction'),
                 ]),
             ])
             // Append-only by design: this is the answer to "the system says 3
@@ -75,6 +75,6 @@ class StockMovementsTable
             // nothing.
             ->recordActions([])
             ->toolbarActions([])
-            ->emptyStateHeading('No stock movements yet');
+            ->emptyStateHeading(__('No stock movements yet'));
     }
 }

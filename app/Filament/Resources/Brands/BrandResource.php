@@ -18,9 +18,28 @@ class BrandResource extends Resource
 {
     protected static ?string $model = Brand::class;
 
+    public static function getModelLabel(): string
+    {
+        return __('Brand');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Brands');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Brands');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Catalogue';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Catalogue');
+    }
+
 
     protected static ?int $navigationSort = 2;
 

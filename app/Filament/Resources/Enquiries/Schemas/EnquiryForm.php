@@ -16,16 +16,16 @@ class EnquiryForm
             Section::make()
                 ->columns(2)
                 ->schema([
-                    TextEntry::make('name'),
-                    TextEntry::make('email')->copyable(),
-                    TextEntry::make('created_at')->label('Received')->dateTime(),
+                    TextEntry::make('name')->label(__('Name')),
+                    TextEntry::make('email')->label(__('Email'))->copyable(),
+                    TextEntry::make('created_at')->label(__('Received'))->dateTime(),
                     TextEntry::make('emailed_at')
-                        ->label('Emailed to you')
+                        ->label(__('Emailed to you'))
                         ->dateTime()
-                        ->placeholder('Not emailed'),
+                        ->placeholder(__('Not emailed')),
                 ]),
 
-            Section::make('Message')
+            Section::make(__('Message'))
                 ->schema([
                     TextEntry::make('message')->hiddenLabel()->prose(),
                 ]),

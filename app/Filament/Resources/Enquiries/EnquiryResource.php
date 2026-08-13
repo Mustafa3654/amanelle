@@ -18,9 +18,28 @@ class EnquiryResource extends Resource
 {
     protected static ?string $model = Enquiry::class;
 
+    public static function getModelLabel(): string
+    {
+        return __('Enquiry');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Enquiries');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Enquiries');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Orders';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Orders');
+    }
+
 
     protected static ?int $navigationSort = 1;
 

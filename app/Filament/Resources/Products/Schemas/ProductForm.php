@@ -24,33 +24,33 @@ class ProductForm
                 Section::make()
                     ->columns(2)
                     ->schema([
-                        Select::make('type')
+                        Select::make('type')->label(__('Type'))
                             ->options([
-                                'fragrance' => 'Fragrance',
-                                'skincare' => 'Skincare',
-                                'makeup' => 'Makeup',
+                                'fragrance' => __('Fragrance'),
+                                'skincare' => __('Skincare'),
+                                'makeup' => __('Makeup'),
                             ])
                             ->required()
                             ->default('fragrance')
                             // Drives which detail fields and variant axes
                             // apply, so the rest of the form reacts to it.
                             ->live()
-                            ->helperText('Chooses which fields and variant options apply.'),
+                            ->helperText(__('Chooses which fields and variant options apply.')),
 
-                        TextInput::make('slug')
+                        TextInput::make('slug')->label(__('Slug'))
                             ->required()
                             ->unique(ignoreRecord: true)
-                            ->helperText('Used in the product URL.'),
+                            ->helperText(__('Used in the product URL.')),
 
                         Select::make('brand_id')
-                            ->label('Brand')
+                            ->label(__('Brand'))
                             ->relationship('brand', 'slug')
                             ->getOptionLabelFromRecordUsing(fn ($record) => $record->name)
                             ->searchable()
                             ->preload(),
 
                         Select::make('category_id')
-                            ->label('Category')
+                            ->label(__('Category'))
                             ->relationship('category', 'slug')
                             ->getOptionLabelFromRecordUsing(fn ($record) => $record->name)
                             ->searchable()
@@ -65,7 +65,7 @@ class ProductForm
                         ->map(fn (array $locale, string $code) => Tab::make($locale['name'])
                             ->schema([
                                 TextInput::make("name.{$code}")
-                                    ->label('Name')
+                                    ->label(__('Name'))
                                     ->required($code === 'ar')
                                     ->live(onBlur: true)
                                     ->afterStateUpdated(function ($state, $set, $get) use ($code) {
@@ -79,88 +79,88 @@ class ProductForm
                                     }),
 
                                 Textarea::make("short_description.{$code}")
-                                    ->label('Short description')
+                                    ->label(__('Short description'))
                                     ->rows(2)
                                     ->maxLength(300)
-                                    ->helperText('Shown on cards and at the top of the product page.'),
+                                    ->helperText(__('Shown on cards and at the top of the product page.')),
 
                                 Textarea::make("description.{$code}")
-                                    ->label('Full description')
+                                    ->label(__('Full description'))
                                     ->rows(5),
                             ]))
                         ->values()
                         ->all()),
 
-                Section::make('Fragrance')
-                    ->description('Longevity and projection are what this audience actually compares, so they are rated and filterable rather than buried in prose.')
+                Section::make(__('Fragrance'))
+                    ->description(__('Longevity and projection are what this audience actually compares, so they are rated and filterable rather than buried in prose.'))
                     ->visible(fn ($get) => $get('type') === 'fragrance')
                     ->columns(2)
                     ->schema([
                         Select::make('longevity')
-                            ->label('Longevity — الثبات')
+                            ->label(__('Longevity — الثبات'))
                             ->options([1 => '1 — weak', 2 => '2', 3 => '3 — moderate', 4 => '4', 5 => '5 — very long'])
                             ->native(false),
 
                         Select::make('projection')
-                            ->label('Projection — الفوحان')
+                            ->label(__('Projection — الفوحان'))
                             ->options([1 => '1 — close to skin', 2 => '2', 3 => '3 — moderate', 4 => '4', 5 => '5 — fills a room'])
                             ->native(false),
 
-                        Select::make('gender')
-                            ->options(['women' => 'Women', 'men' => 'Men', 'unisex' => 'Unisex'])
+                        Select::make('gender')->label(__('Gender'))
+                            ->options(['women' => __('Women'), 'men' => __('Men'), 'unisex' => __('Unisex')])
                             ->native(false),
 
-                        TagsInput::make('notes_top')->label('Top notes')->placeholder('Bergamot'),
-                        TagsInput::make('notes_heart')->label('Heart notes')->placeholder('Rose'),
-                        TagsInput::make('notes_base')->label('Base notes')->placeholder('Oud'),
+                        TagsInput::make('notes_top')->label(__('Top notes'))->placeholder(__('Bergamot')),
+                        TagsInput::make('notes_heart')->label(__('Heart notes'))->placeholder(__('Rose')),
+                        TagsInput::make('notes_base')->label(__('Base notes'))->placeholder(__('Oud')),
                     ]),
 
-                Section::make('Default pricing')
-                    ->description('These prices are used as defaults when you add a product variant. You can override them per size or shade.')
+                Section::make(__('Default pricing'))
+                    ->description(__('These prices are used as defaults when you add a product variant. You can override them per size or shade.'))
                     ->columns(2)
                     ->schema([
                         TextInput::make('default_cost_price')
-                            ->label('Cost price')
+                            ->label(__('Cost price'))
                             ->numeric()
                             ->minValue(0)
                             ->prefix('$'),
                         TextInput::make('default_sale_price')
-                            ->label('Sale price')
+                            ->label(__('Sale price'))
                             ->numeric()
                             ->minValue(0)
                             ->prefix('$'),
                     ]),
 
-                Section::make('Skincare')
+                Section::make(__('Skincare'))
                     ->visible(fn ($get) => $get('type') === 'skincare')
                     ->columns(2)
                     ->schema([
-                        TagsInput::make('skin_types')->placeholder('oily, dry, combination'),
-                        TagsInput::make('concerns')->placeholder('dark-circles, fine-lines'),
+                        TagsInput::make('skin_types')->label(__('Skin types'))->placeholder(__('oily, dry, combination')),
+                        TagsInput::make('concerns')->label(__('Concerns'))->placeholder(__('dark-circles, fine-lines')),
                     ]),
 
-                Section::make('Photography')
-                    ->description('Uploads are converted to WebP and resized automatically. A variant with its own photo overrides the main one.')
+                Section::make(__('Photography'))
+                    ->description(__('Uploads are converted to WebP and resized automatically. A variant with its own photo overrides the main one.'))
                     ->schema([
                         WebpUpload::make('image_path')
-                            ->label('Main image')
+                            ->label(__('Main image'))
                             ->directory('products'),
 
                         WebpUpload::make('gallery')
-                            ->label('More images')
+                            ->label(__('More images'))
                             ->directory('products')
                             ->multiple()
                             ->reorderable()
                             ->appendFiles()
-                            ->helperText('Other angles, packaging, the authenticity seal. Drag to reorder.'),
+                            ->helperText(__('Other angles, packaging, the authenticity seal. Drag to reorder.')),
                     ]),
 
-                Section::make('Visibility')
+                Section::make(__('Visibility'))
                     ->columns(3)
                     ->schema([
-                        Toggle::make('is_active')->label('Published')->default(true),
-                        Toggle::make('is_featured')->label('Featured on the homepage'),
-                        DateTimePicker::make('published_at')->default(now()),
+                        Toggle::make('is_active')->label(__('Published'))->default(true),
+                        Toggle::make('is_featured')->label(__('Featured on the homepage')),
+                        DateTimePicker::make('published_at')->label(__('Published at'))->default(now()),
                     ]),
             ]);
     }

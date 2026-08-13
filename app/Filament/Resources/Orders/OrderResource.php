@@ -18,9 +18,28 @@ class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
+    public static function getModelLabel(): string
+    {
+        return __('Order');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Orders');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Orders');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Orders';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Orders');
+    }
+
 
     protected static ?int $navigationSort = 0;
 

@@ -12,7 +12,10 @@ class LowStockAlert extends TableWidget
 {
     protected static ?int $sort = 2;
 
-    protected static ?string $heading = 'Running low';
+    public function getHeading(): ?string
+    {
+        return __('Running low');
+    }
 
     protected int|string|array $columnSpan = 'full';
 
@@ -31,27 +34,27 @@ class LowStockAlert extends TableWidget
             )
             ->columns([
                 TextColumn::make('variant.product.name')
-                    ->label('Product')
+                    ->label(__('Product'))
                     ->description(fn (Inventory $record) => $record->variant?->product?->brand?->name)
                     ->wrap(),
 
-                TextColumn::make('variant.sku')->label('SKU'),
+                TextColumn::make('variant.sku')->label(__('SKU')),
 
                 TextColumn::make('variant_label')
-                    ->label('Variant')
+                    ->label(__('Variant'))
                     ->state(fn (Inventory $record) => $record->variant?->label()),
 
-                TextColumn::make('quantity')->label('On shelf')->alignEnd(),
-                TextColumn::make('reserved')->label('Reserved')->alignEnd(),
+                TextColumn::make('quantity')->label(__('On shelf'))->alignEnd(),
+                TextColumn::make('reserved')->label(__('Reserved'))->alignEnd(),
 
                 TextColumn::make('available')
-                    ->label('Sellable')
+                    ->label(__('Sellable'))
                     ->alignEnd()
                     ->badge()
                     ->state(fn (Inventory $record) => $record->available())
                     ->color(fn ($state) => $state === 0 ? 'danger' : 'warning'),
             ])
-            ->emptyStateHeading('Everything is well stocked')
+            ->emptyStateHeading(__('Everything is well stocked'))
             ->emptyStateIcon('heroicon-o-check-circle')
             ->paginated([5, 10, 25]);
     }

@@ -10,18 +10,24 @@ class OrdersChart extends ChartWidget
 {
     protected static ?int $sort = 3;
 
-    protected ?string $heading = 'Orders over time';
+    public function getHeading(): ?string
+    {
+        return __('Orders over time');
+    }
 
-    protected ?string $description = 'Orders placed, and revenue from the ones delivered.';
+    public function getDescription(): ?string
+    {
+        return __('Orders placed, and revenue from the ones delivered.');
+    }
 
     public ?string $filter = '30';
 
     protected function getFilters(): ?array
     {
         return [
-            '7' => 'Last 7 days',
-            '30' => 'Last 30 days',
-            '90' => 'Last 90 days',
+            '7' => __('Last 7 days'),
+            '30' => __('Last 30 days'),
+            '90' => __('Last 90 days'),
         ];
     }
 
@@ -57,7 +63,7 @@ class OrdersChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Orders',
+                    'label' => __('Orders'),
                     'data' => $counts,
                     'borderColor' => '#c9a96e',
                     'backgroundColor' => 'rgba(201, 169, 110, 0.15)',
@@ -66,7 +72,7 @@ class OrdersChart extends ChartWidget
                     'yAxisID' => 'y',
                 ],
                 [
-                    'label' => 'Delivered revenue (USD)',
+                    'label' => __('Delivered revenue (USD)'),
                     'data' => $revenue,
                     'borderColor' => '#8c6a3a',
                     'backgroundColor' => 'rgba(140, 106, 58, 0.1)',
@@ -89,7 +95,7 @@ class OrdersChart extends ChartWidget
                     'position' => 'left',
                     'beginAtZero' => true,
                     'ticks' => ['precision' => 0],
-                    'title' => ['display' => true, 'text' => 'Orders'],
+                    'title' => ['display' => true, 'text' => __('Orders')],
                 ],
                 'y1' => [
                     'position' => 'right',

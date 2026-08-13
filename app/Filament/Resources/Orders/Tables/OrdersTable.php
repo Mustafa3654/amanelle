@@ -20,24 +20,24 @@ class OrdersTable
             ->poll('30s')
             ->columns([
                 TextColumn::make('number')
-                    ->label('Order')
+                    ->label(__('Order'))
                     ->searchable()
                     ->weight('bold')
                     ->description(fn (Order $record) => $record->placed_at?->diffForHumans()),
 
                 TextColumn::make('customer_name')
-                    ->label('Customer')
+                    ->label(__('Customer'))
                     ->searchable()
                     ->description(fn (Order $record) => $record->customer_phone),
 
-                TextColumn::make('city')->toggleable(),
+                TextColumn::make('city')->label(__('City'))->toggleable(),
 
                 TextColumn::make('items_count')
                     ->counts('items')
-                    ->label('Lines')
+                    ->label(__('Lines'))
                     ->alignEnd(),
 
-                TextColumn::make('total')
+                TextColumn::make('total')->label(__('Total'))
                     ->money('USD')
                     ->alignEnd()
                     // What the customer actually saw, when it was not dollars.
@@ -45,7 +45,7 @@ class OrdersTable
                         ? number_format((float) $record->total * (float) $record->display_rate).' '.$record->display_currency
                         : null),
 
-                TextColumn::make('status')
+                TextColumn::make('status')->label(__('Status'))
                     ->badge()
                     ->color(fn (string $state) => match ($state) {
                         'pending' => 'warning',
@@ -57,14 +57,14 @@ class OrdersTable
                     }),
 
                 TextColumn::make('reservation_expires_at')
-                    ->label('Stock held until')
+                    ->label(__('Stock held until'))
                     ->since()
-                    ->placeholder('—')
+                    ->placeholder(__('—'))
                     ->toggleable()
-                    ->tooltip('Pending orders hold stock. Past this it goes back on sale automatically.'),
+                    ->tooltip(__('Pending orders hold stock. Past this it goes back on sale automatically.')),
             ])
             ->filters([
-                SelectFilter::make('status')
+                SelectFilter::make('status')->label(__('Status'))
                     ->options(array_combine(Order::STATUSES, array_map('ucfirst', Order::STATUSES)))
                     ->multiple(),
             ])
@@ -76,17 +76,17 @@ class OrdersTable
                  */
                 Action::make('advance')
                     ->label(fn (Order $record) => match ($record->status) {
-                        'pending' => 'Start processing',
-                        'processing' => 'Mark shipped',
-                        'shipped' => 'Mark delivered',
-                        default => 'Done',
+                        'pending' => __('Start processing'),
+                        'processing' => __('Mark shipped'),
+                        'shipped' => __('Mark delivered'),
+                        default => __('Done'),
                     })
                     ->icon('heroicon-o-arrow-right-circle')
                     ->color(fn (Order $record) => $record->status === 'shipped' ? 'success' : 'gray')
                     ->visible(fn (Order $record) => in_array($record->status, ['pending', 'processing', 'shipped'], true))
                     ->requiresConfirmation(fn (Order $record) => $record->status === 'shipped')
-                    ->modalHeading('Mark as delivered?')
-                    ->modalDescription('This removes the items from your shelf count and clears the reservation for this order.')
+                    ->modalHeading(__('Mark as delivered?'))
+                    ->modalDescription(__('This removes the items from your shelf count and clears the reservation for this order.'))
                     ->action(function (Order $record) {
                         $next = match ($record->status) {
                             'pending' => 'processing',
@@ -108,18 +108,18 @@ class OrdersTable
                     }),
 
                 Action::make('cancel')
-                    ->label('Cancel')
+                    ->label(__('Cancel'))
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn (Order $record) => ! in_array($record->status, ['delivered', 'cancelled'], true))
                     ->requiresConfirmation()
-                    ->modalDescription('The reserved items go back on sale immediately.')
+                    ->modalDescription(__('The reserved items go back on sale immediately.'))
                     ->action(function (Order $record) {
                         $record->update(['status' => 'cancelled', 'cancelled_at' => now()]);
 
                         Notification::make()
                             ->title("{$record->number} cancelled")
-                            ->body('Stock released back on sale.')
+                            ->body(__('Stock released back on sale.'))
                             ->success()
                             ->send();
                     }),
@@ -127,7 +127,7 @@ class OrdersTable
                 EditAction::make(),
                 DeleteAction::make()
                     ->requiresConfirmation()
-                    ->modalDescription('This permanently deletes the order and its items.'),
+                    ->modalDescription(__('This permanently deletes the order and its items.')),
             ])
             ->toolbarActions([
                 /*
@@ -139,7 +139,7 @@ class OrdersTable
                  * November" is done by filtering the table then exporting.
                  */
                 Action::make('export')
-                    ->label('Export CSV')
+                    ->label(__('Export CSV'))
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('gray')
                     ->action(function ($livewire) {

@@ -20,13 +20,17 @@ use Illuminate\Support\Facades\DB;
 class ItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
-    protected static ?string $title = 'Invoice items and received stock';
+    // Static and argument-taking, matching the parent.
+    public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string
+    {
+        return __('Invoice items and received stock');
+    }
 
     public function form(Schema $schema): Schema
     {
         return $schema->components([
             Select::make('product_variant_id')
-                ->label('Product / item code')
+                ->label(__('Product / item code'))
                 ->options(fn () => ProductVariant::with('product')->get()->mapWithKeys(fn ($variant) => [$variant->id => "{$variant->item_code} · {$variant->product?->name} · {$variant->label()}"]))
                 ->searchable()
                 ->live()
@@ -36,22 +40,22 @@ class ItemsRelationManager extends RelationManager
                     $set('line_total', (int) ($variant ? 1 : 0) * (float) ($variant?->cost_price ?? 0));
                 })
                 ->required(),
-            TextInput::make('quantity')->numeric()->minValue(1)->default(1)->live()
+            TextInput::make('quantity')->label(__('Quantity'))->numeric()->minValue(1)->default(1)->live()
                 ->afterStateUpdated(fn ($state, Get $get, Set $set) => $set('line_total', (int) $state * (float) $get('unit_cost')))->required(),
-            TextInput::make('unit_cost')->numeric()->prefix('$')->minValue(0)->live()
+            TextInput::make('unit_cost')->label(__('Unit cost'))->numeric()->prefix('$')->minValue(0)->live()
                 ->afterStateUpdated(fn ($state, Get $get, Set $set) => $set('line_total', (int) $get('quantity') * (float) $state))->required(),
-            TextInput::make('line_total')->numeric()->prefix('$')->readOnly()->required()->helperText('Quantity × cost price.'),
+            TextInput::make('line_total')->label(__('Line total'))->numeric()->prefix('$')->readOnly()->required()->helperText(__('Quantity × cost price.')),
         ]);
     }
 
     public function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('variant.product.name')->label('Product'),
-            TextColumn::make('variant.sku')->label('SKU'),
-            TextColumn::make('quantity'),
-            TextColumn::make('unit_cost')->money('USD'),
-            TextColumn::make('line_total')->money('USD'),
+            TextColumn::make('variant.product.name')->label(__('Product')),
+            TextColumn::make('variant.sku')->label(__('SKU')),
+            TextColumn::make('quantity')->label(__('Quantity')),
+            TextColumn::make('unit_cost')->label(__('Unit cost'))->money('USD'),
+            TextColumn::make('line_total')->label(__('Line total'))->money('USD'),
         ])->headerActions([
             CreateAction::make()->after(function ($record) {
                 $market = config('amanelle.default_market');
@@ -80,7 +84,7 @@ class ItemsRelationManager extends RelationManager
                     'credit' => 0,
                 ]);
 
-                Notification::make()->title('Stock received')->success()->send();
+                Notification::make()->title(__('Stock received'))->success()->send();
             }),
         ]);
     }

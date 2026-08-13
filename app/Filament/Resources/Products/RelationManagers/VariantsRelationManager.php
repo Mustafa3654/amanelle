@@ -29,7 +29,12 @@ class VariantsRelationManager extends RelationManager
 {
     protected static string $relationship = 'variants';
 
-    protected static ?string $title = 'Variants & stock';
+    // Static and argument-taking, matching the parent — a relation manager's
+    // title is resolved from the owner record, not the instance.
+    public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string
+    {
+        return __('Variants & stock');
+    }
 
     public function form(Schema $schema): Schema
     {
@@ -56,20 +61,20 @@ class VariantsRelationManager extends RelationManager
             Section::make()
                 ->columns(2)
                 ->schema([
-                    TextInput::make('sku')
+                    TextInput::make('sku')->label(__('Sku'))
                         ->required()
                         ->unique(ignoreRecord: true)
-                        ->helperText('Your internal code. Appears on the order.'),
+                        ->helperText(__('Your internal code. Appears on the order.')),
 
                     TextInput::make('item_code')
-                        ->label('Item code')
+                        ->label(__('Item code'))
                         ->unique(ignoreRecord: true)
-                        ->helperText('Your purchase/catalogue code.'),
+                        ->helperText(__('Your purchase/catalogue code.')),
 
-                    TextInput::make('sort_order')->numeric()->default(0),
+                    TextInput::make('sort_order')->label(__('Sort order'))->numeric()->default(0),
 
                     TextInput::make('initial_quantity')
-                        ->label('Initial quantity')
+                        ->label(__('Initial quantity'))
                         ->numeric()
                         ->minValue(0)
                         ->default(0)
@@ -77,23 +82,23 @@ class VariantsRelationManager extends RelationManager
                         ->dehydrated(),
 
                     TextInput::make('volume_ml')
-                        ->label('Size (ml)')
+                        ->label(__('Size (ml)'))
                         ->numeric()
                         ->visible($isSizeBased),
 
-                    Select::make('concentration')
+                    Select::make('concentration')->label(__('Concentration'))
                         ->options([
                             'edc' => 'EDC', 'edt' => 'EDT', 'edp' => 'EDP',
-                            'parfum' => 'Parfum', 'extrait' => 'Extrait',
-                            'mist' => 'Body mist', 'oil' => 'Oil',
+                            'parfum' => __('Parfum'), 'extrait' => __('Extrait'),
+                            'mist' => __('Body mist'), 'oil' => __('Oil'),
                         ])
                         ->native(false)
                         ->visible($isSizeBased && $product->type === 'fragrance'),
 
                     ColorPicker::make('shade_hex')
-                        ->label('Shade colour')
+                        ->label(__('Shade colour'))
                         ->visible($isMakeup)
-                        ->helperText('Becomes the swatch on the product page.'),
+                        ->helperText(__('Becomes the swatch on the product page.')),
                 ]),
 
             Tabs::make('Shade name')
@@ -102,32 +107,32 @@ class VariantsRelationManager extends RelationManager
                 ->tabs(collect(config('amanelle.locales'))
                     ->map(fn (array $locale, string $code) => Tab::make($locale['name'])
                         ->schema([
-                            TextInput::make("shade_name.{$code}")->label('Shade name'),
+                            TextInput::make("shade_name.{$code}")->label(__('Shade name')),
                         ]))
                     ->values()
                     ->all()),
 
-            Section::make('Price')
-                ->description('Entered in USD, the base currency. The storefront converts to LBP at the current rate.')
+            Section::make(__('Price'))
+                ->description(__('Entered in USD, the base currency. The storefront converts to LBP at the current rate.'))
                 ->columns(2)
                 ->schema([
-                    TextInput::make('cost_price')->label('Cost price')->numeric()->required()->prefix('$')->default($product->default_cost_price),
+                    TextInput::make('cost_price')->label(__('Cost price'))->numeric()->required()->prefix('$')->default($product->default_cost_price),
 
-                    TextInput::make('price')->label('Sale price')->numeric()->required()->prefix('$')->default($product->default_sale_price),
+                    TextInput::make('price')->label(__('Sale price'))->numeric()->required()->prefix('$')->default($product->default_sale_price),
 
                     TextInput::make('compare_at_price')
-                        ->label('Was (optional)')
+                        ->label(__('Was (optional)'))
                         ->numeric()
                         ->prefix('$')
-                        ->helperText('Shown struck through. Blank for no discount.'),
+                        ->helperText(__('Shown struck through. Blank for no discount.')),
                 ]),
 
             WebpUpload::make('image_path')
-                ->label('Photo for this variant')
+                ->label(__('Photo for this variant'))
                 ->directory('variants')
-                ->helperText('Optional. Use it when the variant looks different — a shade, not another bottle size.'),
+                ->helperText(__('Optional. Use it when the variant looks different — a shade, not another bottle size.')),
 
-            Toggle::make('is_active')->label('Available to buy')->default(true),
+            Toggle::make('is_active')->label(__('Available to buy'))->default(true),
         ]);
     }
 
@@ -161,7 +166,7 @@ class VariantsRelationManager extends RelationManager
                 'quantity_delta' => $this->initialQuantity,
                 'reserved_delta' => 0,
                 'user_id' => auth()->id(),
-                'note' => 'Initial quantity when variant was created',
+                'note' => __('Initial quantity when variant was created'),
             ]);
         }
     }
@@ -175,30 +180,32 @@ class VariantsRelationManager extends RelationManager
             ->defaultSort('sort_order')
             ->columns([
                 ColorColumn::make('shade_hex')
+                    // Intentionally blank — a swatch needs no column heading.
+                    // Not __(''), which returns the whole translation array.
                     ->label('')
                     ->visible($this->getOwnerRecord()->type === 'makeup'),
 
-                TextColumn::make('sku')->searchable(),
+                TextColumn::make('sku')->label(__('Sku'))->searchable(),
 
                 TextColumn::make('label')
-                    ->label('Variant')
+                    ->label(__('Variant'))
                     ->state(fn ($record) => $record->label()),
 
-                TextColumn::make('price')->money('USD')->alignEnd(),
+                TextColumn::make('price')->label(__('Price'))->money('USD')->alignEnd(),
 
                 TextColumn::make('on_shelf')
-                    ->label('On shelf')
+                    ->label(__('On shelf'))
                     ->alignEnd()
                     ->state(fn ($record) => $record->inventories->firstWhere('market', $market)?->quantity ?? 0),
 
                 TextColumn::make('reserved')
-                    ->label('Reserved')
+                    ->label(__('Reserved'))
                     ->alignEnd()
-                    ->tooltip('Held by open orders. Leaves the shelf when the order is delivered.')
+                    ->tooltip(__('Held by open orders. Leaves the shelf when the order is delivered.'))
                     ->state(fn ($record) => $record->inventories->firstWhere('market', $market)?->reserved ?? 0),
 
                 TextColumn::make('sellable')
-                    ->label('Sellable')
+                    ->label(__('Sellable'))
                     ->alignEnd()
                     ->badge()
                     ->state(fn ($record) => $record->availableIn($market))
@@ -215,7 +222,7 @@ class VariantsRelationManager extends RelationManager
                  * a manual correction is as traceable as one made by an order.
                  */
                 Action::make('stock')
-                    ->label('Stock')
+                    ->label(__('Stock'))
                     ->icon('heroicon-o-archive-box')
                     ->color('warning')
                     ->fillForm(function ($record) use ($market) {
@@ -228,22 +235,22 @@ class VariantsRelationManager extends RelationManager
                     })
                     ->schema([
                         TextInput::make('quantity')
-                            ->label('Units on the shelf')
+                            ->label(__('Units on the shelf'))
                             ->numeric()
                             ->minValue(0)
                             ->required()
-                            ->helperText('What you physically have. Reserved units are subtracted automatically when working out what is sellable.'),
+                            ->helperText(__('What you physically have. Reserved units are subtracted automatically when working out what is sellable.')),
 
                         TextInput::make('low_stock_threshold')
-                            ->label('Warn me below')
+                            ->label(__('Warn me below'))
                             ->numeric()
                             ->minValue(0)
                             ->default(5),
 
                         Textarea::make('note')
-                            ->label('Reason (optional)')
+                            ->label(__('Reason (optional)'))
                             ->rows(2)
-                            ->placeholder('Stocktake, new delivery, damaged…'),
+                            ->placeholder(__('Stocktake, new delivery, damaged…')),
                     ])
                     ->action(function (array $data, $record) use ($market) {
                         $inventory = Inventory::firstOrNew([
@@ -274,7 +281,7 @@ class VariantsRelationManager extends RelationManager
                         }
 
                         Notification::make()
-                            ->title('Stock updated')
+                            ->title(__('Stock updated'))
                             ->body("{$record->sku} is now {$data['quantity']} on the shelf.")
                             ->success()
                             ->send();

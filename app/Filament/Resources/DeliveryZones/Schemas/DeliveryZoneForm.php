@@ -21,51 +21,51 @@ class DeliveryZoneForm
                     ->map(fn (array $locale, string $code) => Tab::make($locale['name'])
                         ->schema([
                             TextInput::make("name.{$code}")
-                                ->label('Area name')
+                                ->label(__('Area name'))
                                 ->required($code === 'ar')
                                 ->placeholder($code === 'ar' ? 'بيروت' : 'Beirut'),
 
                             Textarea::make("description.{$code}")
-                                ->label('Note for customers')
+                                ->label(__('Note for customers'))
                                 ->rows(2)
                                 ->placeholder($code === 'ar' ? 'توصيل خلال ٢٤ ساعة' : 'Delivered within 24 hours'),
                         ]))
                     ->values()
                     ->all()),
 
-            Section::make('Fee')
-                ->description('Entered in USD. The storefront converts it to the customer\'s currency like every other price.')
+            Section::make(__('Fee'))
+                ->description(__('Entered in USD. The storefront converts it to the customer\'s currency like every other price.'))
                 ->columns(2)
                 ->schema([
                     TextInput::make('fee')
-                        ->label('Delivery fee')
+                        ->label(__('Delivery fee'))
                         ->numeric()
                         ->required()
                         ->minValue(0)
                         ->prefix('$')
                         ->default(0)
-                        ->helperText('Set 0 for free delivery to this area.'),
+                        ->helperText(__('Set 0 for free delivery to this area.')),
 
                     TextInput::make('free_above')
-                        ->label('Free when the order is over')
+                        ->label(__('Free when the order is over'))
                         ->numeric()
                         ->minValue(0)
                         ->prefix('$')
                         // Charged on the discounted subtotal, so a promo can
                         // carry an order over the threshold.
-                        ->helperText('Blank to always charge. Checked against the subtotal after any discount.'),
+                        ->helperText(__('Blank to always charge. Checked against the subtotal after any discount.')),
                 ]),
 
             Section::make()
                 ->columns(3)
                 ->schema([
                     Toggle::make('is_default')
-                        ->label('Preselected at checkout')
-                        ->helperText('Only one area can be the default.'),
+                        ->label(__('Preselected at checkout'))
+                        ->helperText(__('Only one area can be the default.')),
 
-                    Toggle::make('is_active')->label('Offered at checkout')->default(true),
+                    Toggle::make('is_active')->label(__('Offered at checkout'))->default(true),
 
-                    TextInput::make('sort_order')->numeric()->default(0),
+                    TextInput::make('sort_order')->label(__('Sort order'))->numeric()->default(0),
                 ]),
         ]);
     }

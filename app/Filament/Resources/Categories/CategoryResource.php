@@ -18,9 +18,28 @@ class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
+    public static function getModelLabel(): string
+    {
+        return __('Category');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Categories');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Categories');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Catalogue';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Catalogue');
+    }
+
 
     protected static ?int $navigationSort = 3;
 

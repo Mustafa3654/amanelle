@@ -15,26 +15,26 @@ class PurchaseInvoiceForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Purchase invoice')->columnSpanFull()->columns(6)->schema([
+            Section::make(__('Purchase invoice'))->columnSpanFull()->columns(6)->schema([
                 DatePicker::make('invoice_date')->required()->default(now()),
-                Select::make('currency')
+                Select::make('currency')->label(__('Currency'))
                     ->options(['USD' => 'USD', 'LBP' => 'LBP'])
                     ->default('USD')
                     ->live()
                     ->required(),
-                Textarea::make('notes')->columnSpan(6)->rows(2),
+                Textarea::make('notes')->label(__('Notes'))->columnSpan(6)->rows(2),
             ]),
 
-            Section::make('Purchased items')
-                ->description('Add every product received on this purchase invoice. Select the product, enter quantity, and confirm the cost price.')
+            Section::make(__('Purchased items'))
+                ->description(__('Add every product received on this purchase invoice. Select the product, enter quantity, and confirm the cost price.'))
                 ->columnSpanFull()
                 ->schema([
                     Repeater::make('items')
                         ->relationship()
-                        ->label('Invoice lines')
+                        ->label(__('Invoice lines'))
                         ->schema([
                             Select::make('product_variant_id')
-                                ->label('Product name')
+                                ->label(__('Product name'))
                                 ->options(fn () => \App\Models\ProductVariant::query()
                                     ->with('product')
                                     ->get()
@@ -71,12 +71,12 @@ class PurchaseInvoiceForm
                                     $set('line_total', (int) ($get('quantity') ?: 1) * $cost);
                                 })
                                 ->required(),
-                            \Filament\Forms\Components\TextInput::make('quantity')
+                            \Filament\Forms\Components\TextInput::make('quantity')->label(__('Quantity'))
                                 ->numeric()->minValue(1)->default(1)->live()
                                 ->afterStateUpdated(fn ($state, $get, $set) => $set('line_total', (int) $state * (float) $get('unit_cost')))
                                 ->required(),
                             \Filament\Forms\Components\TextInput::make('unit_cost')
-                                ->label('Cost price')->numeric()->minValue(0)->prefix('$')->live(onBlur: true)
+                                ->label(__('Cost price'))->numeric()->minValue(0)->prefix('$')->live(onBlur: true)
                                 ->afterStateUpdated(function ($state, $get, $set) {
                                     $set('line_total', (int) $get('quantity') * (float) $state);
 
@@ -88,7 +88,7 @@ class PurchaseInvoiceForm
                                 })
                                 ->required(),
                             \Filament\Forms\Components\TextInput::make('line_total')
-                                ->label('Amount')->numeric()->prefix('$')->readOnly()->required(),
+                                ->label(__('Amount'))->numeric()->prefix('$')->readOnly()->required(),
                         ])
                         ->columns(4)
                         ->defaultItems(1)
@@ -105,7 +105,7 @@ class PurchaseInvoiceForm
                         ->itemLabel(fn (array $state): ?string => $state['product_variant_id'] ?? null ? 'Purchased item' : 'New item'),
 
                     TextInput::make('invoice_total_display')
-                        ->label('Invoice total')
+                        ->label(__('Invoice total'))
                         ->prefix('$')
                         ->default(0)
                         ->readOnly()

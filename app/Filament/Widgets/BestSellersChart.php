@@ -10,17 +10,23 @@ class BestSellersChart extends ChartWidget
 {
     protected static ?int $sort = 4;
 
-    protected ?string $heading = 'Best sellers';
+    public function getHeading(): ?string
+    {
+        return __('Best sellers');
+    }
 
-    protected ?string $description = 'Units sold on delivered orders. Cancelled and pending orders are excluded.';
+    public function getDescription(): ?string
+    {
+        return __('Units sold on delivered orders. Cancelled and pending orders are excluded.');
+    }
 
     public ?string $filter = 'units';
 
     protected function getFilters(): ?array
     {
         return [
-            'units' => 'By units sold',
-            'revenue' => 'By revenue',
+            'units' => __('By units sold'),
+            'revenue' => __('By revenue'),
         ];
     }
 

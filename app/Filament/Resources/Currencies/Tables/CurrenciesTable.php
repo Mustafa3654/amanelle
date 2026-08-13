@@ -16,31 +16,31 @@ class CurrenciesTable
         return $table
             ->defaultSort('sort_order')
             ->columns([
-                TextColumn::make('code')
+                TextColumn::make('code')->label(__('Code'))
                     ->badge()
                     ->searchable(),
 
-                TextColumn::make('name')
+                TextColumn::make('name')->label(__('Name'))
                     ->searchable(),
 
-                TextColumn::make('symbol'),
+                TextColumn::make('symbol')->label(__('Symbol')),
 
                 TextColumn::make('rate')
-                    ->label('Units per 1 base')
+                    ->label(__('Units per 1 base'))
                     ->numeric(decimalPlaces: 2)
                     ->description(fn ($record) => $record->is_base ? 'Base currency' : null)
                     ->sortable(),
 
                 TextColumn::make('rate_updated_at')
-                    ->label('Rate updated')
+                    ->label(__('Rate updated'))
                     // The LBP rate moves; a stale one silently misprices the
                     // whole catalogue, so surface how old it is.
                     ->since()
-                    ->placeholder('Never')
+                    ->placeholder(__('Never'))
                     ->sortable(),
 
                 IconColumn::make('is_active')
-                    ->label('In switcher')
+                    ->label(__('In switcher'))
                     ->boolean(),
             ])
             ->recordActions([

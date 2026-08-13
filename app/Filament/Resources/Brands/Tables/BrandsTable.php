@@ -16,24 +16,24 @@ class BrandsTable
     {
         return $table
             ->columns([
-                TextColumn::make('slug')
+                TextColumn::make('slug')->label(__('Slug'))
                     ->searchable(),
-                TextColumn::make('logo_path')
+                TextColumn::make('logo_path')->label(__('Logo path'))
                     ->searchable(),
-                TextColumn::make('origin_country')
+                TextColumn::make('origin_country')->label(__('Origin country'))
                     ->searchable(),
-                IconColumn::make('is_authorised_stockist')
+                IconColumn::make('is_authorised_stockist')->label(__('Is authorised stockist'))
                     ->boolean(),
-                TextColumn::make('sort_order')
+                TextColumn::make('sort_order')->label(__('Sort order'))
                     ->numeric()
                     ->sortable(),
-                IconColumn::make('is_active')
+                IconColumn::make('is_active')->label(__('Is active'))
                     ->boolean(),
-                TextColumn::make('created_at')
+                TextColumn::make('created_at')->label(__('Created at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
+                TextColumn::make('updated_at')->label(__('Updated at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

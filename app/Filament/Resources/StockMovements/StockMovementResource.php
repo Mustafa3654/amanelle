@@ -18,13 +18,31 @@ class StockMovementResource extends Resource
 {
     protected static ?string $model = StockMovement::class;
 
+    public static function getModelLabel(): string
+    {
+        return __('Stock movement');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Stock movements');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Catalogue';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Catalogue');
+    }
+
 
     protected static ?int $navigationSort = 5;
 
-    protected static ?string $navigationLabel = 'Stock history';
+    public static function getNavigationLabel(): string
+    {
+        return __('Stock history');
+    }
+
 
     protected static ?string $recordTitleAttribute = 'id';
 

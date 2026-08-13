@@ -18,13 +18,31 @@ class InstagramPostResource extends Resource
 {
     protected static ?string $model = InstagramPost::class;
 
+    public static function getModelLabel(): string
+    {
+        return __('Instagram post');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Instagram posts');
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCamera;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Catalogue';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Catalogue');
+    }
+
 
     protected static ?int $navigationSort = 4;
 
-    protected static ?string $navigationLabel = 'Instagram feed';
+    public static function getNavigationLabel(): string
+    {
+        return __('Instagram feed');
+    }
+
 
     protected static ?string $recordTitleAttribute = 'permalink';
 

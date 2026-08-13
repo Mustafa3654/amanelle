@@ -20,18 +20,18 @@ class CategoryForm
             Section::make()
                 ->columns(2)
                 ->schema([
-                    TextInput::make('slug')->required()->unique(ignoreRecord: true),
+                    TextInput::make('slug')->label(__('Slug'))->required()->unique(ignoreRecord: true),
 
                     Select::make('parent_id')
-                        ->label('Sits under')
+                        ->label(__('Sits under'))
                         ->relationship('parent', 'slug')
                         ->getOptionLabelFromRecordUsing(fn ($record) => $record->name)
                         ->searchable()
                         ->preload()
-                        ->helperText('Leave empty for a top-level category.'),
+                        ->helperText(__('Leave empty for a top-level category.')),
 
                     WebpUpload::make('image_path')
-                        ->label('Image')
+                        ->label(__('Image'))
                         ->directory('categories')
                         ->columnSpanFull(),
                 ]),
@@ -42,11 +42,11 @@ class CategoryForm
                     ->map(fn (array $locale, string $code) => Tab::make($locale['name'])
                         ->schema([
                             TextInput::make("name.{$code}")
-                                ->label('Name')
+                                ->label(__('Name'))
                                 ->required($code === 'ar'),
 
                             Textarea::make("description.{$code}")
-                                ->label('Description')
+                                ->label(__('Description'))
                                 ->rows(3),
                         ]))
                     ->values()
@@ -55,8 +55,8 @@ class CategoryForm
             Section::make()
                 ->columns(2)
                 ->schema([
-                    Toggle::make('is_active')->label('Active')->default(true),
-                    TextInput::make('sort_order')->numeric()->default(0),
+                    Toggle::make('is_active')->label(__('Active'))->default(true),
+                    TextInput::make('sort_order')->label(__('Sort order'))->numeric()->default(0),
                 ]),
         ]);
     }

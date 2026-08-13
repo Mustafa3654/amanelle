@@ -20,15 +20,17 @@ class InstagramPostsTable
             // Order on the homepage is the whole point of this screen.
             ->reorderable('sort_order')
             ->columns([
+                // Blank heading on purpose — the thumbnail speaks for itself.
+                // Not __(''), which returns the whole translation array.
                 ImageColumn::make('image_path')->label('')->height(60),
 
-                TextColumn::make('caption')->wrap()->limit(60)->placeholder('—'),
+                TextColumn::make('caption')->label(__('Caption'))->wrap()->limit(60)->placeholder(__('—')),
 
-                IconColumn::make('is_video')->label('Reel')->boolean(),
+                IconColumn::make('is_video')->label(__('Reel'))->boolean(),
 
-                TextColumn::make('posted_at')->label('Posted')->date('d M Y')->sortable(),
+                TextColumn::make('posted_at')->label(__('Posted'))->date('d M Y')->sortable(),
 
-                IconColumn::make('is_active')->label('Shown')->boolean(),
+                IconColumn::make('is_active')->label(__('Shown'))->boolean(),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -38,7 +40,7 @@ class InstagramPostsTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->emptyStateHeading('No posts yet')
-            ->emptyStateDescription('The Instagram section is hidden on the homepage until you add one.');
+            ->emptyStateHeading(__('No posts yet'))
+            ->emptyStateDescription(__('The Instagram section is hidden on the homepage until you add one.'));
     }
 }

@@ -29,7 +29,7 @@ class WebpUpload extends FileUpload
             ->imageEditor()
             ->disk('public')
             ->visibility('public')
-            ->helperText('JPG, PNG or WebP. Converted to WebP automatically — smaller files, faster pages.')
+            ->helperText(__('JPG, PNG or WebP. Converted to WebP automatically — smaller files, faster pages.'))
             ->saveUploadedFileUsing(function (TemporaryUploadedFile $file, $component) {
                 $directory = $component->getDirectory() ?? 'uploads';
 

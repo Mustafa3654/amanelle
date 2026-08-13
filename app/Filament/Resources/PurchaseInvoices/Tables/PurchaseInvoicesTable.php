@@ -13,16 +13,16 @@ class PurchaseInvoicesTable
     public static function configure(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('invoice_number')->label('Invoice')->searchable(),
-            TextColumn::make('invoice_date')->date()->sortable(),
-            TextColumn::make('total')->money('USD')->alignEnd(),
-            TextColumn::make('items_count')->counts('items')->label('Items'),
+            TextColumn::make('invoice_number')->label(__('Invoice'))->searchable(),
+            TextColumn::make('invoice_date')->label(__('Invoice date'))->date()->sortable(),
+            TextColumn::make('total')->label(__('Total'))->money('USD')->alignEnd(),
+            TextColumn::make('items_count')->counts('items')->label(__('Items')),
         ])->defaultSort('invoice_date', 'desc')->recordActions([
             EditAction::make(),
             DeleteAction::make()
                 ->requiresConfirmation()
-                ->modalHeading('Delete purchase invoice?')
-                ->modalDescription('This reverses the invoice stock and account postings before deletion.')
+                ->modalHeading(__('Delete purchase invoice?'))
+                ->modalDescription(__('This reverses the invoice stock and account postings before deletion.'))
                 ->action(function ($record): void {
                     DB::transaction(function () use ($record): void {
                         $record->load('items');

@@ -2,6 +2,7 @@
 namespace App\Filament\Resources\PurchaseInvoices\Pages;
 use App\Models\Inventory;
 use App\Models\StockMovement;
+use Illuminate\Support\Facades\DB;
 use App\Filament\Resources\PurchaseInvoices\PurchaseInvoiceResource;
 use Filament\Resources\Pages\CreateRecord;
 class CreatePurchaseInvoice extends CreateRecord {
@@ -36,12 +37,11 @@ class CreatePurchaseInvoice extends CreateRecord {
 
     protected function afterCreate(): void
     {
-        foreach ($this->invoiceItems as $item) {
-            \App\Models\ProductVariant::whereKey($item['product_variant_id'])->update([
-                'cost_price' => (float) $item['unit_cost'],
+        DB::transaction(function (): void {
+        foreach ($this->record->items()->get() as $line) {
+            \App\Models\ProductVariant::whereKey($line->product_variant_id)->update([
+                'cost_price' => (float) $line->unit_cost,
             ]);
-
-            $line = $this->record->items()->create($item);
             $market = config('amanelle.default_market');
             $inventory = Inventory::firstOrCreate(
                 ['product_variant_id' => $line->product_variant_id, 'market' => $market],
@@ -67,5 +67,6 @@ class CreatePurchaseInvoice extends CreateRecord {
             'tax' => 0,
             'total' => $amount,
         ]);
+        });
     }
 }

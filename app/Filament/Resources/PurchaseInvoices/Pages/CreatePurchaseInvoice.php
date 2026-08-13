@@ -28,7 +28,6 @@ class CreatePurchaseInvoice extends CreateRecord {
         unset($data['items']);
         $data['invoice_number'] = 'PI-'.now()->format('Ymd-His').'-'.str()->upper(str()->random(4));
         $data['created_by'] = auth()->id();
-        $data['supplier_name'] = null;
         $data['subtotal'] = collect($items)->sum(fn ($item) => (float) ($item['line_total'] ?? 0));
         $data['tax'] = 0;
         $data['total'] = $data['subtotal'];

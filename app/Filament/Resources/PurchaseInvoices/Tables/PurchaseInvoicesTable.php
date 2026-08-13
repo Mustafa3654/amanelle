@@ -14,7 +14,6 @@ class PurchaseInvoicesTable
     {
         return $table->columns([
             TextColumn::make('invoice_number')->label('Invoice')->searchable(),
-            TextColumn::make('supplier_name')->label('Supplier')->searchable(),
             TextColumn::make('invoice_date')->date()->sortable(),
             TextColumn::make('total')->money('USD')->alignEnd(),
             TextColumn::make('items_count')->counts('items')->label('Items'),

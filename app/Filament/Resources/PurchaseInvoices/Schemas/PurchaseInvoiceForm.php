@@ -26,7 +26,7 @@ class PurchaseInvoiceForm
             ]),
 
             Section::make('Purchased items')
-                ->description('Add every product received on this supplier invoice. Select by item code, enter quantity, and confirm the cost price.')
+                ->description('Add every product received on this purchase invoice. Select the product, enter quantity, and confirm the cost price.')
                 ->columnSpanFull()
                 ->schema([
                     Repeater::make('items')

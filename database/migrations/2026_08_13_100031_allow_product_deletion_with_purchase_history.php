@@ -21,6 +21,8 @@ return new class extends Migration
             });
         }
 
+        DB::statement('ALTER TABLE purchase_invoice_items MODIFY product_variant_id BIGINT UNSIGNED NULL');
+
         Schema::table('purchase_invoice_items', function (Blueprint $table) {
             $table->foreign('product_variant_id')
                 ->references('id')

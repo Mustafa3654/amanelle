@@ -17,7 +17,7 @@ class PurchaseInvoiceForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Purchase invoice')->columns(6)->schema([
+            Section::make('Purchase invoice')->columnSpanFull()->columns(6)->schema([
                 Select::make('supplier_id')->relationship('supplier', 'name')->searchable()->preload()->required()->columnSpan(2),
                 DatePicker::make('invoice_date')->required()->default(now()),
                 DatePicker::make('due_date')->label('Due date'),

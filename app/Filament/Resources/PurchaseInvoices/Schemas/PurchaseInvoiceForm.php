@@ -21,10 +21,42 @@ class PurchaseInvoiceForm
                 Select::make('supplier_id')->relationship('supplier', 'name')->searchable()->preload()->required()->columnSpan(2),
                 DatePicker::make('invoice_date')->required()->default(now()),
                 DatePicker::make('due_date')->label('Due date'),
-                TextInput::make('currency')->default('USD')->required()->maxLength(3),
+                Select::make('currency')
+                    ->options(['USD' => 'USD', 'LBP' => 'LBP'])
+                    ->default('USD')
+                    ->live()
+                    ->afterStateHydrated(function ($state, Set $set) {
+                        $accounts = \App\Models\Account::query()->where('currency', $state ?: 'USD')->where('is_active', true)->get();
+                        $set('debit_account_id', $accounts->firstWhere('type', 'purchases')?->id);
+                        $set('credit_account_id', $accounts->firstWhere('type', 'payable')?->id);
+                    })
+                    ->afterStateUpdated(function ($state, Set $set) {
+                        $accounts = \App\Models\Account::query()
+                            ->where('currency', $state)
+                            ->where('is_active', true)
+                            ->get();
+
+                        $set('debit_account_id', $accounts->firstWhere('type', 'purchases')?->id);
+                        $set('credit_account_id', $accounts->firstWhere('type', 'payable')?->id);
+                    })
+                    ->required(),
                 Select::make('status')->options(['unpaid' => 'Unpaid', 'partially_paid' => 'Partially paid', 'paid' => 'Paid', 'cancelled' => 'Cancelled'])->default('unpaid')->required(),
-                Select::make('debit_account_id')->label('Debit account')->relationship('debitAccount', 'name')->getOptionLabelFromRecordUsing(fn ($record) => "{$record->account_number} · {$record->name} · {$record->currency}")->searchable()->preload()->required(),
-                Select::make('credit_account_id')->label('Credit account')->relationship('creditAccount', 'name')->getOptionLabelFromRecordUsing(fn ($record) => "{$record->account_number} · {$record->name} · {$record->currency}")->searchable()->preload()->required(),
+                Select::make('debit_account_id')
+                    ->label('Debit account')
+                    ->options(fn (Get $get) => \App\Models\Account::query()
+                        ->where('currency', $get('currency') ?: 'USD')
+                        ->where('is_active', true)
+                        ->get()
+                        ->mapWithKeys(fn ($account) => [$account->id => "{$account->account_number} · {$account->name}"]))
+                    ->searchable()->preload()->required(),
+                Select::make('credit_account_id')
+                    ->label('Credit account')
+                    ->options(fn (Get $get) => \App\Models\Account::query()
+                        ->where('currency', $get('currency') ?: 'USD')
+                        ->where('is_active', true)
+                        ->get()
+                        ->mapWithKeys(fn ($account) => [$account->id => "{$account->account_number} · {$account->name}"]))
+                    ->searchable()->preload()->required(),
                 Textarea::make('notes')->columnSpan(6)->rows(2),
             ]),
 

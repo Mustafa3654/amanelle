@@ -66,8 +66,6 @@ class CreatePurchaseInvoice extends CreateRecord {
             'subtotal' => $amount,
             'tax' => 0,
             'total' => $amount,
-            'debit' => 0,
-            'credit' => 0,
         ]);
     }
 }

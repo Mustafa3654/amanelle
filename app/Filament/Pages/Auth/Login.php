@@ -7,7 +7,7 @@ use Filament\Auth\Pages\Login as BaseLogin;
 
 class Login extends BaseLogin
 {
-    protected function getUsernameFormComponent(): TextInput
+    protected function getEmailFormComponent(): TextInput
     {
         return TextInput::make('username')
             ->label('Username')

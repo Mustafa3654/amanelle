@@ -18,4 +18,6 @@ class PurchaseInvoice extends Model
     public function items(): HasMany { return $this->hasMany(PurchaseInvoiceItem::class); }
     public function creator(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
     public function supplier(): BelongsTo { return $this->belongsTo(Supplier::class); }
+    public function debitAccount(): BelongsTo { return $this->belongsTo(Account::class, 'debit_account_id'); }
+    public function creditAccount(): BelongsTo { return $this->belongsTo(Account::class, 'credit_account_id'); }
 }

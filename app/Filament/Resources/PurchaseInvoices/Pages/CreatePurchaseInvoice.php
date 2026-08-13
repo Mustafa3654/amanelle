@@ -20,6 +20,8 @@ class CreatePurchaseInvoice extends CreateRecord {
         $data['invoice_number'] = 'PI-'.now()->format('Ymd-His').'-'.str()->upper(str()->random(4));
         $data['created_by'] = auth()->id();
         $data['supplier_name'] = \App\Models\Supplier::find($data['supplier_id'])?->name ?? '';
+        $data['debit_account'] = \App\Models\Account::find($data['debit_account_id'])?->name ?? 'Inventory / Purchases';
+        $data['credit_account'] = \App\Models\Account::find($data['credit_account_id'])?->name ?? 'Accounts Payable';
         $data['subtotal'] = collect($items)->sum(fn ($item) => (float) ($item['line_total'] ?? 0));
         $data['tax'] = 0;
         $data['total'] = $data['subtotal'];

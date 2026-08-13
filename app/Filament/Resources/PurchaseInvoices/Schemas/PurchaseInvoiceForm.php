@@ -23,8 +23,8 @@ class PurchaseInvoiceForm
                 DatePicker::make('due_date')->label('Due date'),
                 TextInput::make('currency')->default('USD')->required()->maxLength(3),
                 Select::make('status')->options(['unpaid' => 'Unpaid', 'partially_paid' => 'Partially paid', 'paid' => 'Paid', 'cancelled' => 'Cancelled'])->default('unpaid')->required(),
-                TextInput::make('debit_account')->label('Debit account')->default('Inventory / Purchases')->required(),
-                TextInput::make('credit_account')->label('Credit account')->default('Accounts Payable')->required(),
+                Select::make('debit_account_id')->label('Debit account')->relationship('debitAccount', 'name')->getOptionLabelFromRecordUsing(fn ($record) => "{$record->account_number} · {$record->name} · {$record->currency}")->searchable()->preload()->required(),
+                Select::make('credit_account_id')->label('Credit account')->relationship('creditAccount', 'name')->getOptionLabelFromRecordUsing(fn ($record) => "{$record->account_number} · {$record->name} · {$record->currency}")->searchable()->preload()->required(),
                 Textarea::make('notes')->columnSpan(6)->rows(2),
             ]),
 

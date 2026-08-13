@@ -50,6 +50,13 @@ class PurchaseInvoiceForm
                         ->schema([
                             Select::make('product_variant_id')
                                 ->label('Product name')
+                                ->options(fn () => \App\Models\ProductVariant::query()
+                                    ->with('product')
+                                    ->get()
+                                    ->mapWithKeys(fn ($variant) => [
+                                        $variant->id => "{$variant->product?->name} · {$variant->label()}",
+                                    ])
+                                    ->all())
                                 ->getSearchResultsUsing(function (string $search): array {
                                     return \App\Models\ProductVariant::query()
                                         ->with('product')
@@ -69,6 +76,7 @@ class PurchaseInvoiceForm
                                     ? "{$variant->item_code} · {$variant->product?->name} · {$variant->label()}"
                                     : null)
                                 ->searchable()
+                                ->preload()
                                 ->searchDebounce(0)
                                 ->live()
                                 ->afterStateUpdated(function ($state, $set, $get) {

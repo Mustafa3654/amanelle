@@ -52,11 +52,21 @@ new class extends Component
 
     public function with(): array
     {
+        $market = config('amanelle.default_market');
+
+        $variants = $this->product->variants
+            ->where('is_active', true)
+            ->sortBy('sort_order');
+
         return [
-            'variants' => $this->product->variants
-                ->where('is_active', true)
-                ->sortBy('sort_order'),
-            'market' => config('amanelle.default_market'),
+            'variants' => $variants,
+            'market' => $market,
+            /*
+             * Sold out only when every variant is. A lipstick with one shade
+             * gone is still buyable, so the card must not claim otherwise —
+             * the picker greys out the individual shade instead.
+             */
+            'soldOut' => $variants->every(fn ($variant) => $variant->availableIn($market) === 0),
         ];
     }
 };
@@ -64,14 +74,25 @@ new class extends Component
 
 <div class="relative">
     @if ($compact)
+        {{-- Sold out says so rather than only looking dimmed. A greyed button
+             with "Add to cart" on it reads as broken; the customer cannot tell
+             whether the shop is out or the page is. --}}
         <button type="button"
                 wire:click="add"
                 wire:loading.attr="disabled"
-                class="w-full rounded-full border border-accent-fill/40 py-2.5 text-[11px] font-semibold
-                       uppercase tracking-[0.14em] text-accent transition
-                       hover:bg-accent-fill hover:text-[#0d0b09] disabled:opacity-50">
+                @disabled($soldOut)
+                @class([
+                    'w-full rounded-full border py-2.5 text-[11px] font-semibold uppercase',
+                    'tracking-[0.14em] transition disabled:cursor-not-allowed',
+                    'border-hairline text-ink-muted' => $soldOut,
+                    'border-accent-fill/40 text-accent hover:bg-accent-fill hover:text-[#0d0b09] disabled:opacity-50' => ! $soldOut,
+                ])>
             <span wire:loading.remove wire:target="add">
-                {{ $variants->count() > 1 ? __('Choose') : __('Add to cart') }}
+                @if ($soldOut)
+                    {{ __('Out of stock') }}
+                @else
+                    {{ $variants->count() > 1 ? __('Choose') : __('Add to cart') }}
+                @endif
             </span>
             <span wire:loading wire:target="add">{{ __('Adding…') }}</span>
         </button>
@@ -79,9 +100,13 @@ new class extends Component
         <button type="button"
                 wire:click="add"
                 wire:loading.attr="disabled"
+                @disabled($soldOut)
                 class="w-full rounded-full bg-accent-fill px-8 py-4 text-xs font-semibold uppercase
-                       tracking-[0.18em] text-[#0d0b09] transition hover:opacity-90 disabled:opacity-50">
-            <span wire:loading.remove wire:target="add">{{ __('Add to cart') }}</span>
+                       tracking-[0.18em] text-[#0d0b09] transition hover:opacity-90
+                       disabled:cursor-not-allowed disabled:opacity-50">
+            <span wire:loading.remove wire:target="add">
+                {{ $soldOut ? __('Out of stock') : __('Add to cart') }}
+            </span>
             <span wire:loading wire:target="add">{{ __('Adding…') }}</span>
         </button>
     @endif

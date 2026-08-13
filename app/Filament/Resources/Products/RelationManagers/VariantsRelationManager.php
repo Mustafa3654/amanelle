@@ -73,6 +73,7 @@ class VariantsRelationManager extends RelationManager
 
                     TextInput::make('sort_order')->label(__('Sort order'))->numeric()->default(0),
 
+                    // Set once, when the variant is first created.
                     TextInput::make('initial_quantity')
                         ->label(__('Initial quantity'))
                         ->numeric()
@@ -80,6 +81,28 @@ class VariantsRelationManager extends RelationManager
                         ->default(0)
                         ->visible(fn (string $operation): bool => $operation === 'create')
                         ->dehydrated(),
+
+                    /*
+                     * On edit the quantity is shown but not editable. Stock is
+                     * a running total of real movements — purchases in, orders
+                     * out — and typing over it here would silently contradict
+                     * the movement log without leaving a trace of who changed
+                     * what. The Stock action on the table row makes the same
+                     * change deliberately and records it as an adjustment.
+                     */
+                    TextInput::make('current_stock')
+                        ->label(__('Stock on the shelf'))
+                        ->visible(fn (string $operation): bool => $operation === 'edit')
+                        ->disabled()
+                        ->dehydrated(false)
+                        ->helperText(__('Use the Stock button on the row to change this — it records the reason.'))
+                        ->afterStateHydrated(function ($component, $record) {
+                            $component->state(
+                                $record?->inventories
+                                    ->firstWhere('market', config('amanelle.default_market'))
+                                    ?->quantity ?? 0
+                            );
+                        }),
 
                     TextInput::make('volume_ml')
                         ->label(__('Size (ml)'))

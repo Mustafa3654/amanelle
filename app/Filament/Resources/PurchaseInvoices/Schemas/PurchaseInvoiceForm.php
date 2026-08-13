@@ -66,27 +66,35 @@ class PurchaseInvoiceForm
                         ->relationship()
                         ->label('Invoice lines')
                         ->schema([
-                            TextInput::make('item_search')
-                                ->label('Item name / code')
-                                ->placeholder('Type product name, item code, or SKU')
-                                ->live(debounce: 400)
-                                ->afterStateUpdated(function ($state, $set, $get) {
-                                    $variant = \App\Models\ProductVariant::query()
+                            Select::make('product_variant_id')
+                                ->label('Type item name / code')
+                                ->getSearchResultsUsing(function (string $search): array {
+                                    return \App\Models\ProductVariant::query()
                                         ->with('product')
-                                        ->where(function ($query) use ($state) {
-                                            $query->where('item_code', 'like', "{$state}%")
-                                                ->orWhere('sku', 'like', "{$state}%")
-                                                ->orWhereHas('product', fn ($product) => $product->where('search_text', 'like', "{$state}%"));
+                                        ->where(function ($query) use ($search) {
+                                            $query->where('item_code', 'like', "{$search}%")
+                                                ->orWhere('sku', 'like', "{$search}%")
+                                                ->orWhereHas('product', fn ($product) => $product->where('search_text', 'like', "{$search}%"));
                                         })
-                                        ->first();
-
-                                    $set('product_variant_id', $variant?->id);
+                                        ->limit(50)
+                                        ->get()
+                                        ->mapWithKeys(fn ($variant) => [
+                                            $variant->id => "{$variant->item_code} · {$variant->product?->name} · {$variant->label()}",
+                                        ])
+                                        ->all();
+                                })
+                                ->getOptionLabelUsing(fn ($value): ?string => ($variant = \App\Models\ProductVariant::with('product')->find($value))
+                                    ? "{$variant->item_code} · {$variant->product?->name} · {$variant->label()}"
+                                    : null)
+                                ->searchable()
+                                ->live()
+                                ->afterStateUpdated(function ($state, $set, $get) {
+                                    $variant = \App\Models\ProductVariant::find($state);
                                     $cost = (float) ($variant?->cost_price ?? 0);
                                     $set('unit_cost', $cost);
                                     $set('line_total', (int) ($get('quantity') ?: 1) * $cost);
                                 })
-                                ->dehydrated(false),
-                            TextInput::make('product_variant_id')->hidden()->required(),
+                                ->required(),
                             \Filament\Forms\Components\TextInput::make('quantity')
                                 ->numeric()->minValue(1)->default(1)->live()
                                 ->afterStateUpdated(fn ($state, $get, $set) => $set('line_total', (int) $state * (float) $get('unit_cost')))

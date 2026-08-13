@@ -25,8 +25,8 @@ class PurchaseInvoiceForm
                     ->live()
                     ->afterStateHydrated(function ($state, $set) {
                         $accounts = \App\Models\Account::query()->where('currency', $state ?: 'USD')->where('is_active', true)->get();
-                        $set('debit_account_id', $accounts->firstWhere('type', 'purchases')?->id);
-                        $set('credit_account_id', $accounts->firstWhere('type', 'payable')?->id);
+                        $set('debit_account_id', $accounts->firstWhere('type', 'debit')?->id);
+                        $set('credit_account_id', $accounts->firstWhere('type', 'credit')?->id);
                     })
                     ->afterStateUpdated(function ($state, $set) {
                         $accounts = \App\Models\Account::query()
@@ -34,8 +34,8 @@ class PurchaseInvoiceForm
                             ->where('is_active', true)
                             ->get();
 
-                        $set('debit_account_id', $accounts->firstWhere('type', 'purchases')?->id);
-                        $set('credit_account_id', $accounts->firstWhere('type', 'payable')?->id);
+                        $set('debit_account_id', $accounts->firstWhere('type', 'debit')?->id);
+                        $set('credit_account_id', $accounts->firstWhere('type', 'credit')?->id);
                     })
                     ->required(),
                 Select::make('status')->options(['unpaid' => 'Unpaid', 'partially_paid' => 'Partially paid', 'paid' => 'Paid', 'cancelled' => 'Cancelled'])->default('unpaid')->required(),

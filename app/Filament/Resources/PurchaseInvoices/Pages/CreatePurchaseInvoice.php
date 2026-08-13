@@ -6,6 +6,12 @@ use App\Filament\Resources\PurchaseInvoices\PurchaseInvoiceResource;
 use Filament\Resources\Pages\CreateRecord;
 class CreatePurchaseInvoice extends CreateRecord {
     protected static string $resource = PurchaseInvoiceResource::class;
+
+    protected function getMaxContentWidth(): ?string
+    {
+        return 'full';
+    }
+
     protected array $invoiceItems = [];
     protected function mutateFormDataBeforeCreate(array $data): array {
         $items = $data['items'] ?? [];

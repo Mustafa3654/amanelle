@@ -5,7 +5,7 @@ use Filament\Resources\Pages\EditRecord;
 class EditPurchaseInvoice extends EditRecord {
     protected static string $resource = PurchaseInvoiceResource::class;
 
-    protected function getMaxContentWidth(): ?string
+    public function getMaxContentWidth(): ?string
     {
         return 'full';
     }

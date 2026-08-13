@@ -7,7 +7,7 @@ use Filament\Resources\Pages\CreateRecord;
 class CreatePurchaseInvoice extends CreateRecord {
     protected static string $resource = PurchaseInvoiceResource::class;
 
-    protected function getMaxContentWidth(): ?string
+    public function getMaxContentWidth(): ?string
     {
         return 'full';
     }

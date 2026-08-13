@@ -6,7 +6,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListPurchaseInvoices extends ListRecords {
     protected static string $resource = PurchaseInvoiceResource::class;
 
-    protected function getMaxContentWidth(): ?string
+    public function getMaxContentWidth(): ?string
     {
         return 'full';
     }

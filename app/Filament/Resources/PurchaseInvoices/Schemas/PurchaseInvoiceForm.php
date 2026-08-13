@@ -74,9 +74,9 @@ class PurchaseInvoiceForm
                                     $variant = \App\Models\ProductVariant::query()
                                         ->with('product')
                                         ->where(function ($query) use ($state) {
-                                            $query->where('item_code', 'like', "%{$state}%")
-                                                ->orWhere('sku', 'like', "%{$state}%")
-                                                ->orWhereHas('product', fn ($product) => $product->where('search_text', 'like', "%{$state}%"));
+                                            $query->where('item_code', 'like', "{$state}%")
+                                                ->orWhere('sku', 'like', "{$state}%")
+                                                ->orWhereHas('product', fn ($product) => $product->where('search_text', 'like', "{$state}%"));
                                         })
                                         ->first();
 

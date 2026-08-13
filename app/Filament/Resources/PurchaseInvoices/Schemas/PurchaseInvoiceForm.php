@@ -49,15 +49,11 @@ class PurchaseInvoiceForm
                         ->label('Invoice lines')
                         ->schema([
                             Select::make('product_variant_id')
-                                ->label('Type item name / code')
+                                ->label('Product name')
                                 ->getSearchResultsUsing(function (string $search): array {
                                     return \App\Models\ProductVariant::query()
                                         ->with('product')
-                                        ->where(function ($query) use ($search) {
-                                            $query->where('item_code', 'like', "{$search}%")
-                                                ->orWhere('sku', 'like', "{$search}%")
-                                                ->orWhereHas('product', fn ($product) => $product->where('search_text', 'like', "{$search}%"));
-                                        })
+                                        ->whereHas('product', fn ($product) => $product->where('search_text', 'like', "{$search}%"))
                                         ->limit(50)
                                         ->get()
                                         ->mapWithKeys(fn ($variant) => [

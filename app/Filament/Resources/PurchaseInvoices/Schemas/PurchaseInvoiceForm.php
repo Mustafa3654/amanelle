@@ -104,8 +104,16 @@ class PurchaseInvoiceForm
                                 ->afterStateUpdated(fn ($state, $get, $set) => $set('line_total', (int) $state * (float) $get('unit_cost')))
                                 ->required(),
                             \Filament\Forms\Components\TextInput::make('unit_cost')
-                                ->label('Cost price')->numeric()->minValue(0)->prefix('$')->live()
-                                ->afterStateUpdated(fn ($state, $get, $set) => $set('line_total', (int) $get('quantity') * (float) $state))
+                                ->label('Cost price')->numeric()->minValue(0)->prefix('$')->live(onBlur: true)
+                                ->afterStateUpdated(function ($state, $get, $set) {
+                                    $set('line_total', (int) $get('quantity') * (float) $state);
+
+                                    if ($variantId = $get('product_variant_id')) {
+                                        \App\Models\ProductVariant::whereKey($variantId)->update([
+                                            'cost_price' => (float) $state,
+                                        ]);
+                                    }
+                                })
                                 ->required(),
                             \Filament\Forms\Components\TextInput::make('line_total')
                                 ->label('Amount')->numeric()->prefix('$')->readOnly()->required(),

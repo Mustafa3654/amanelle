@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Products\Tables;
 
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Product;
+use App\Support\ProductTypes;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -37,9 +38,13 @@ class ProductsTable
 
                 TextColumn::make('type')->label(__('Type'))
                     ->badge()
+                    // Translated, so the column reads the same as the filter
+                    // and the form rather than showing the raw stored value.
+                    ->formatStateUsing(fn (string $state) => ProductTypes::label($state))
                     ->color(fn (string $state) => match ($state) {
                         'fragrance' => 'warning',
                         'skincare' => 'info',
+                        'makeup', 'makeup_sized' => 'danger',
                         default => 'gray',
                     }),
 
@@ -71,11 +76,7 @@ class ProductsTable
             ])
             ->filters([
                 SelectFilter::make('type')->label(__('Type'))
-                    ->options([
-                        'fragrance' => __('Fragrance'),
-                        'skincare' => __('Skincare'),
-                        'makeup' => __('Makeup'),
-                    ]),
+                    ->options(ProductTypes::options()),
 
                 SelectFilter::make('brand')->label(__('Brand'))
                     ->relationship('brand', 'slug')

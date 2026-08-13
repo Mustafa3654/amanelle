@@ -116,7 +116,7 @@
                     <s class="ms-2 text-sm text-ink-muted" x-show="$store.pdp.was" x-text="$store.pdp.wasLabel"></s>
                 </p>
 
-                @if ($product->type === 'fragrance' && $product->longevity)
+                @if ($product->longevity)
                     <dl class="mt-6 grid grid-cols-2 gap-4 border-y border-hairline py-5 text-sm">
                         <div>
                             <dt class="eyebrow">{{ __('Longevity') }}</dt>

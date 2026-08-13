@@ -57,16 +57,33 @@ return [
     | Product types
     |---------------------------------------------------------------------------
     |
-    | One variant system, three configurations. Fragrance dominates the
-    | catalogue, so it is not a special case bolted onto a makeup schema —
-    | each type simply declares which variant axes apply to it.
+    | One variant system, many configurations. Each type declares which axes a
+    | variant may vary along, and the admin builds the variant form from that.
+    |
+    | This is the single source of truth. It used to be inferred by matching
+    | category names against a list of words in two languages, which meant a
+    | category named anything unexpected silently lost its size field.
+    |
+    | Axes:
+    |   volume        — size in ml
+    |   concentration — EDT / EDP / Extrait, fragrance only
+    |   shade         — a named colour with a hex swatch
+    |
+    | Types can combine axes: a foundation varies by shade and by bottle size,
+    | so it gets both. To add a type, add an entry here — `type` is a plain
+    | string column, so no migration is needed.
     |
     */
 
     'product_types' => [
-        'fragrance' => ['axes' => ['volume', 'concentration']],
-        'skincare' => ['axes' => ['volume']],
-        'makeup' => ['axes' => ['shade']],
+        'fragrance' => ['label' => 'Fragrance', 'axes' => ['volume', 'concentration']],
+        'skincare' => ['label' => 'Skincare', 'axes' => ['volume']],
+        'makeup' => ['label' => 'Makeup', 'axes' => ['shade']],
+        'makeup_sized' => ['label' => 'Makeup (shade and size)', 'axes' => ['shade', 'volume']],
+        'haircare' => ['label' => 'Hair care', 'axes' => ['volume']],
+        'bodycare' => ['label' => 'Body care', 'axes' => ['volume']],
+        'accessory' => ['label' => 'Accessory', 'axes' => []],
+        'gift_set' => ['label' => 'Gift set', 'axes' => ['volume']],
     ],
 
     /*

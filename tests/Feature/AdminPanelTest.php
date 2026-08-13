@@ -42,6 +42,7 @@ class AdminPanelTest extends TestCase
             '/admin/enquiries',
             '/admin/instagram-posts',
             '/admin/stock-movements',
+            '/admin/product-variants',
         ] as $path) {
             $this->get($path)->assertOk();
         }

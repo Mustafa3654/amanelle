@@ -23,6 +23,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use App\Support\ProductTypes;
 use Illuminate\Support\Str;
 
 class VariantsRelationManager extends RelationManager
@@ -38,24 +39,21 @@ class VariantsRelationManager extends RelationManager
 
     public function form(Schema $schema): Schema
     {
-        // Categories are the most useful signal for staff; product type remains
-        // the fallback for generic or uncategorized products.
-        $product = $this->getOwnerRecord()->loadMissing('category');
-        $categoryText = Str::lower(collect([
-            $product->category?->getTranslation('name', 'en', false),
-            $product->category?->getTranslation('name', 'ar', false),
-            $product->category?->slug,
-        ])->filter()->implode(' '));
-        $isMakeup = Str::contains($categoryText, [
-            'makeup', 'lipstick', 'blush', 'foundation', 'concealer', 'mascara',
-            'eyeshadow', 'كحل', 'روج', 'أحمر الشفاه', 'مكياج', 'بلاشر',
-        ]);
-        $isSizeBased = ! $isMakeup && (
-            $product->type !== 'makeup' || Str::contains($categoryText, [
-                'perfume', 'fragrance', 'cologne', 'serum', 'cream', 'lotion',
-                'عطر', 'سيروم', 'كريم', 'لوشن',
-            ])
-        );
+        /*
+         * Which fields a variant gets comes from the product's type, via
+         * config/amanelle.php.
+         *
+         * This used to be inferred by matching the category name against a
+         * word list in two languages. A category named anything the list did
+         * not anticipate silently lost its size field, and the two axes were
+         * mutually exclusive — so a product could never have both a shade and
+         * a size, which a foundation or a tinted blush needs.
+         */
+        $product = $this->getOwnerRecord();
+
+        $hasVolume = ProductTypes::hasAxis($product->type, 'volume');
+        $hasConcentration = ProductTypes::hasAxis($product->type, 'concentration');
+        $hasShade = ProductTypes::hasAxis($product->type, 'shade');
 
         return $schema->components([
             Section::make()
@@ -107,7 +105,7 @@ class VariantsRelationManager extends RelationManager
                     TextInput::make('volume_ml')
                         ->label(__('Size (ml)'))
                         ->numeric()
-                        ->visible($isSizeBased),
+                        ->visible($hasVolume),
 
                     Select::make('concentration')->label(__('Concentration'))
                         ->options([
@@ -116,17 +114,17 @@ class VariantsRelationManager extends RelationManager
                             'mist' => __('Body mist'), 'oil' => __('Oil'),
                         ])
                         ->native(false)
-                        ->visible($isSizeBased && $product->type === 'fragrance'),
+                        ->visible($hasConcentration),
 
                     ColorPicker::make('shade_hex')
                         ->label(__('Shade colour'))
-                        ->visible($isMakeup)
+                        ->visible($hasShade)
                         ->helperText(__('Becomes the swatch on the product page.')),
                 ]),
 
             Tabs::make('Shade name')
                 ->columnSpanFull()
-                ->visible($isMakeup)
+                ->visible($hasShade)
                 ->tabs(collect(config('amanelle.locales'))
                     ->map(fn (array $locale, string $code) => Tab::make($locale['name'])
                         ->schema([
@@ -206,7 +204,8 @@ class VariantsRelationManager extends RelationManager
                     // Intentionally blank — a swatch needs no column heading.
                     // Not __(''), which returns the whole translation array.
                     ->label('')
-                    ->visible($this->getOwnerRecord()->type === 'makeup'),
+                    // Any type that varies by shade, not just 'makeup'.
+                    ->visible(ProductTypes::hasAxis($this->getOwnerRecord()->type, 'shade')),
 
                 TextColumn::make('sku')->label(__('Sku'))->searchable(),
 

@@ -21,13 +21,20 @@
 
     <svg viewBox="0 0 100 125" class="relative size-full" fill="none" aria-hidden="true"
          style="color: {{ $tint }}">
-        @if ($product->type === 'fragrance')
+        @php
+            // Chosen by axis, not by a fixed list, so a type added to the
+            // config still gets sensible art instead of the fallback tube.
+            $hasConcentration = \App\Support\ProductTypes::hasAxis($product->type, 'concentration');
+            $hasShade = \App\Support\ProductTypes::hasAxis($product->type, 'shade');
+        @endphp
+
+        @if ($hasConcentration)
             {{-- Flacon: shoulders, neck, cap --}}
             <rect x="42" y="26" width="16" height="10" rx="1.5" fill="currentColor" opacity="0.5"/>
             <path d="M38 38h24a6 6 0 0 1 6 6v42a6 6 0 0 1-6 6H38a6 6 0 0 1-6-6V44a6 6 0 0 1 6-6Z"
                   fill="currentColor" opacity="0.18" stroke="currentColor" stroke-opacity="0.45"/>
             <rect x="40" y="58" width="20" height="14" rx="1" fill="currentColor" opacity="0.22"/>
-        @elseif ($product->type === 'makeup')
+        @elseif ($hasShade)
             {{-- Bullet lipstick, partly extended --}}
             <path d="M44 30h12v18H44z" fill="currentColor" opacity="0.55"/>
             <path d="M44 30l12-6v6H44Z" fill="currentColor" opacity="0.75"/>

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\Schemas;
 
 use App\Filament\Forms\Components\WebpUpload;
+use App\Support\ProductTypes;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
@@ -25,17 +26,22 @@ class ProductForm
                     ->columns(2)
                     ->schema([
                         Select::make('type')->label(__('Type'))
-                            ->options([
-                                'fragrance' => __('Fragrance'),
-                                'skincare' => __('Skincare'),
-                                'makeup' => __('Makeup'),
-                            ])
+                            // Read from config so adding a type is a config
+                            // change, not a migration and three edits here.
+                            ->options(ProductTypes::options())
                             ->required()
                             ->default('fragrance')
+                            ->native(false)
                             // Drives which detail fields and variant axes
                             // apply, so the rest of the form reacts to it.
                             ->live()
-                            ->helperText(__('Chooses which fields and variant options apply.')),
+                            ->helperText(fn ($state) => $state
+                                ? __('Variants will vary by: :axes', [
+                                    'axes' => collect(ProductTypes::axesFor($state))
+                                        ->map(fn (string $axis) => __(ucfirst($axis)))
+                                        ->join(__(' and ')) ?: __('nothing — a single variant'),
+                                ])
+                                : __('Chooses which fields and variant options apply.')),
 
                         TextInput::make('slug')->label(__('Slug'))
                             ->required()
@@ -93,7 +99,9 @@ class ProductForm
 
                 Section::make(__('Fragrance'))
                     ->description(__('Longevity and projection are what this audience actually compares, so they are rated and filterable rather than buried in prose.'))
-                    ->visible(fn ($get) => $get('type') === 'fragrance')
+                    // Any type carrying a concentration is a fragrance for
+                    // these purposes, so a new scent type inherits the fields.
+                    ->visible(fn ($get) => ProductTypes::hasAxis($get('type'), 'concentration'))
                     ->columns(2)
                     ->schema([
                         Select::make('longevity')
@@ -151,7 +159,8 @@ class ProductForm
                     ]),
 
                 Section::make(__('Skincare'))
-                    ->visible(fn ($get) => $get('type') === 'skincare')
+                    // Skin fields suit anything applied to skin or hair.
+                    ->visible(fn ($get) => in_array($get('type'), ['skincare', 'haircare', 'bodycare'], true))
                     ->columns(2)
                     ->schema([
                         TagsInput::make('skin_types')->label(__('Skin types'))->placeholder(__('oily, dry, combination')),

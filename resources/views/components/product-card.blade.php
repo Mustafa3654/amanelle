@@ -57,7 +57,7 @@
             </ul>
         @endif
 
-        @if ($product->type === 'fragrance' && $product->longevity)
+        @if ($product->longevity)
             {{-- Secondary detail; hidden on phones where it wrapped to two
                  uneven lines and pushed the price out of alignment. --}}
             <p class="mt-2 hidden text-xs text-ink-muted sm:block">

@@ -53,11 +53,16 @@ class ProductVariant extends Model
      */
     public function label(): string
     {
-        if ($this->shade_name) {
-            return $this->shade_name;
-        }
-
+        /*
+         * Every axis the variant actually uses, joined.
+         *
+         * The shade used to short-circuit and return alone, which was fine
+         * while a product could only vary one way. A foundation or a tinted
+         * blush varies by both, and "Desert Rose" on its own gives the
+         * customer no way to tell the 30ml from the 50ml.
+         */
         return collect([
+            $this->shade_name ?: null,
             $this->volume_ml ? "{$this->volume_ml}ml" : null,
             $this->concentration ? strtoupper($this->concentration) : null,
         ])->filter()->implode(' · ');

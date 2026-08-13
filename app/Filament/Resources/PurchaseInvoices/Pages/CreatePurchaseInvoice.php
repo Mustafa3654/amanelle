@@ -75,7 +75,9 @@ class CreatePurchaseInvoice extends CreateRecord {
             'credit' => $amount,
         ]);
 
-        \App\Models\Account::whereKey($this->record->debit_account_id)->increment('balance', $amount);
-        \App\Models\Account::whereKey($this->record->credit_account_id)->increment('balance', $amount);
+        if ($this->record->status !== 'cancelled') {
+            \App\Models\Account::whereKey($this->record->debit_account_id)->increment('balance', $amount);
+            \App\Models\Account::whereKey($this->record->credit_account_id)->decrement('balance', $amount);
+        }
     }
 }

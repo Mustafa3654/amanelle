@@ -51,8 +51,10 @@ class PurchaseInvoicesTable
                         }
 
                         $amount = (float) $record->total;
-                        \App\Models\Account::whereKey($record->debit_account_id)->decrement('balance', $amount);
-                        \App\Models\Account::whereKey($record->credit_account_id)->decrement('balance', $amount);
+                        if ($record->status !== 'cancelled') {
+                            \App\Models\Account::whereKey($record->debit_account_id)->decrement('balance', $amount);
+                            \App\Models\Account::whereKey($record->credit_account_id)->increment('balance', $amount);
+                        }
 
                         $record->delete();
                     });

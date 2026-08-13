@@ -83,8 +83,10 @@ class ItemsRelationManager extends RelationManager
 
                 $delta = $total - $previousTotal;
                 if ($delta !== 0.0) {
-                    \App\Models\Account::whereKey($invoice->debit_account_id)->increment('balance', $delta);
-                    \App\Models\Account::whereKey($invoice->credit_account_id)->increment('balance', $delta);
+                    if ($invoice->status !== 'cancelled') {
+                        \App\Models\Account::whereKey($invoice->debit_account_id)->increment('balance', $delta);
+                        \App\Models\Account::whereKey($invoice->credit_account_id)->decrement('balance', $delta);
+                    }
                 }
 
                 Notification::make()->title('Stock received')->success()->send();

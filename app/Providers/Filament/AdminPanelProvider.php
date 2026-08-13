@@ -25,7 +25,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(\App\Filament\Pages\Auth\Login::class)
             // Lets staff change their own name, email and password from the
             // user menu, so the seeded password does not have to be reset
             // through tinker.

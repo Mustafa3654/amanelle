@@ -14,7 +14,16 @@ class CreatePurchaseInvoice extends CreateRecord {
 
     protected array $invoiceItems = [];
     protected function mutateFormDataBeforeCreate(array $data): array {
-        $items = $data['items'] ?? [];
+        $items = collect($data['items'] ?? [])->map(function (array $item): array {
+            $variant = \App\Models\ProductVariant::findOrFail($item['product_variant_id']);
+            $quantity = max(1, (int) ($item['quantity'] ?? 1));
+            $unitCost = (float) ($item['unit_cost'] ?? $variant->cost_price ?? 0);
+            $item['quantity'] = $quantity;
+            $item['unit_cost'] = $unitCost;
+            $item['line_total'] = round($quantity * $unitCost, 2);
+
+            return $item;
+        })->values()->all();
         $this->invoiceItems = $items;
         unset($data['items']);
         $data['invoice_number'] = 'PI-'.now()->format('Ymd-His').'-'.str()->upper(str()->random(4));

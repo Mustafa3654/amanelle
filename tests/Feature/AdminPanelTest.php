@@ -99,6 +99,57 @@ class AdminPanelTest extends TestCase
         $this->assertSame(0, $copy->variants->sum(fn ($v) => $v->availableIn('LB')));
     }
 
+    public function test_creating_a_product_with_starting_stock_makes_it_sellable(): void
+    {
+        Livewire::test(\App\Filament\Resources\Products\Pages\CreateProduct::class)
+            ->fillForm([
+                'type' => 'fragrance',
+                'slug' => 'noble-intense',
+                'name' => ['ar' => 'نوبل إنتنس', 'en' => 'Noble Intense'],
+                'default_sale_price' => 56,
+                'default_cost_price' => 30,
+                'default_quantity' => 12,
+                'is_active' => true,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $product = \App\Models\Product::where('slug', 'noble-intense')->sole();
+        $variant = $product->variants()->sole();
+
+        // The whole point: sellable immediately, without a second trip into
+        // the variant to set stock.
+        $this->assertSame(12, $variant->availableIn('LB'));
+        $this->assertSame(56.0, (float) $variant->price);
+        $this->assertTrue($variant->is_active);
+
+        // Opening stock is a real movement and belongs in the log.
+        $this->assertSame(
+            12,
+            (int) \App\Models\StockMovement::where('product_variant_id', $variant->id)->sum('quantity_delta')
+        );
+    }
+
+    public function test_a_product_created_without_stock_records_no_movement(): void
+    {
+        Livewire::test(\App\Filament\Resources\Products\Pages\CreateProduct::class)
+            ->fillForm([
+                'type' => 'fragrance',
+                'slug' => 'no-stock',
+                'name' => ['ar' => 'بدون', 'en' => 'No stock'],
+                'default_sale_price' => 20,
+                'default_quantity' => 0,
+                'is_active' => true,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $variant = \App\Models\Product::where('slug', 'no-stock')->sole()->variants()->sole();
+
+        $this->assertSame(0, $variant->availableIn('LB'));
+        $this->assertSame(0, \App\Models\StockMovement::where('product_variant_id', $variant->id)->count());
+    }
+
     public function test_bulk_publishing_works(): void
     {
         $products = collect(range(1, 3))->map(fn ($i) => \App\Models\Product::create([

@@ -116,8 +116,8 @@ class ProductForm
                     ]),
 
                 Section::make(__('Default pricing'))
-                    ->description(__('These prices are used as defaults when you add a product variant. You can override them per size or shade.'))
-                    ->columns(2)
+                    ->description(__('Saving creates the first variant from these values. You can add more sizes or shades afterwards, each with its own price and stock.'))
+                    ->columns(3)
                     ->schema([
                         TextInput::make('default_cost_price')
                             ->label(__('Cost price'))
@@ -129,6 +129,25 @@ class ProductForm
                             ->numeric()
                             ->minValue(0)
                             ->prefix('$'),
+
+                        /*
+                         * Stock for the variant this product will create on
+                         * save. Relation managers only appear once a record
+                         * exists, so without this there is nowhere to enter a
+                         * quantity while adding a product — you had to save,
+                         * then go back in and open the variant.
+                         *
+                         * Not a column on products: it seeds an inventory row
+                         * once and is meaningless afterwards.
+                         */
+                        TextInput::make('default_quantity')
+                            ->label(__('Starting stock'))
+                            ->numeric()
+                            ->minValue(0)
+                            ->default(0)
+                            ->visible(fn (string $operation): bool => $operation === 'create')
+                            ->dehydrated(false)
+                            ->helperText(__('How many you have right now. Change it later with the Stock button on the variant.')),
                     ]),
 
                 Section::make(__('Skincare'))

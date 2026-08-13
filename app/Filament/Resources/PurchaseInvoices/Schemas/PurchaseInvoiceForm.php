@@ -7,6 +7,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -66,39 +67,27 @@ class PurchaseInvoiceForm
                         ->relationship()
                         ->label('Invoice lines')
                         ->schema([
-                            Select::make('product_variant_id')
-                                ->label('Item code / product')
-                                ->getSearchResultsUsing(function (string $search): array {
-                                    return \App\Models\ProductVariant::query()
-                                        ->with('product')
-                                        ->where(function ($query) use ($search) {
-                                            $query->where('item_code', 'like', "%{$search}%")
-                                                ->orWhere('sku', 'like', "%{$search}%")
-                                                ->orWhereHas('product', fn ($product) => $product->where('search_text', 'like', "%{$search}%"));
-                                        })
-                                        ->limit(50)
-                                        ->get()
-                                        ->mapWithKeys(fn ($variant) => [
-                                            $variant->id => "{$variant->item_code} · {$variant->product?->name} · {$variant->label()}",
-                                        ])
-                                        ->all();
-                                })
-                                ->getOptionLabelUsing(function ($value): ?string {
-                                    $variant = \App\Models\ProductVariant::with('product')->find($value);
-
-                                    return $variant
-                                        ? "{$variant->item_code} · {$variant->product?->name} · {$variant->label()}"
-                                        : null;
-                                })
-                                ->searchable()
-                                ->live()
+                            TextInput::make('item_search')
+                                ->label('Item name / code')
+                                ->placeholder('Type product name, item code, or SKU')
+                                ->live(debounce: 400)
                                 ->afterStateUpdated(function ($state, $set, $get) {
-                                    $variant = \App\Models\ProductVariant::find($state);
+                                    $variant = \App\Models\ProductVariant::query()
+                                        ->with('product')
+                                        ->where(function ($query) use ($state) {
+                                            $query->where('item_code', 'like', "%{$state}%")
+                                                ->orWhere('sku', 'like', "%{$state}%")
+                                                ->orWhereHas('product', fn ($product) => $product->where('search_text', 'like', "%{$state}%"));
+                                        })
+                                        ->first();
+
+                                    $set('product_variant_id', $variant?->id);
                                     $cost = (float) ($variant?->cost_price ?? 0);
                                     $set('unit_cost', $cost);
                                     $set('line_total', (int) ($get('quantity') ?: 1) * $cost);
                                 })
-                                ->required(),
+                                ->dehydrated(false),
+                            TextInput::make('product_variant_id')->hidden()->required(),
                             \Filament\Forms\Components\TextInput::make('quantity')
                                 ->numeric()->minValue(1)->default(1)->live()
                                 ->afterStateUpdated(fn ($state, $get, $set) => $set('line_total', (int) $state * (float) $get('unit_cost')))

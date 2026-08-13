@@ -9,9 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        DB::statement("ALTER TABLE accounts MODIFY type ENUM('debit', 'credit', 'purchases', 'payable') NOT NULL DEFAULT 'debit'");
         DB::table('accounts')->where('type', 'purchases')->update(['type' => 'debit']);
         DB::table('accounts')->where('type', 'payable')->update(['type' => 'credit']);
-        Schema::table('accounts', function (Blueprint $table) { $table->enum('type', ['debit', 'credit'])->default('debit')->change(); });
+        DB::statement("ALTER TABLE accounts MODIFY type ENUM('debit', 'credit') NOT NULL DEFAULT 'debit'");
     }
 
     public function down(): void

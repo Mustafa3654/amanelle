@@ -4,6 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Models\Order;
 use Filament\Pages\Page;
+use Filament\Forms\Components\DatePicker;
+use Filament\Schemas\Schema;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CustomersReport extends Page
@@ -26,11 +28,29 @@ class CustomersReport extends Page
         return __('Customers Report');
     }
 
+    public $from = null;
+    public $until = null;
+
+    public function mount(): void
+    {
+        $this->from = now()->startOfMonth()->toDateString();
+        $this->until = now()->toDateString();
+    }
+
+    public function form(Schema $form): Schema
+    {
+        return $form->components([
+            DatePicker::make('from')->label(__('From'))->live(),
+            DatePicker::make('until')->label(__('Until'))->live(),
+        ])->statePath('data');
+    }
+
     public function getCustomers()
     {
         return Order::query()
             ->select('customer_name', 'customer_email', 'customer_phone', 'city', 'shipping_address', 'number', 'total', 'placed_at')
             ->whereNotNull('customer_phone')
+            ->whereBetween('placed_at', [$this->from.' 00:00:00', $this->until.' 23:59:59'])
             ->latest('placed_at')
             ->get()
             ->groupBy(fn ($order) => strtolower($order->customer_email ?: $order->customer_phone))

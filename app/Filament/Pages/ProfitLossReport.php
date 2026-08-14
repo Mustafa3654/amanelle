@@ -27,9 +27,9 @@ class ProfitLossReport extends Page
     }
     protected string $view = 'filament.pages.profit-loss-report';
 
-    public ?string $from = null;
-    public ?string $until = null;
-    public string $currency = 'all';
+    public $from = null;
+    public $until = null;
+    public $currency = 'all';
 
     public function mount(): void
     {

@@ -47,8 +47,9 @@
         <style>
             .seasonal-banner { position:relative; z-index:30; min-height:42px; display:grid; place-items:center; padding:.65rem 1rem; background:var(--accent-fill); background-position:center; background-size:cover; color:#fff; font-size:.8rem; font-weight:600; text-align:center; }
             .seasonal-effect { pointer-events:none; position:fixed; inset:0; z-index:40; overflow:hidden; }
-            .seasonal-effect-snow::before,.seasonal-effect-snow::after { content:''; position:absolute; inset:-12rem 0 0; background-image:radial-gradient(ellipse at center,rgba(255,255,255,.95) 0 2px,transparent 3px),radial-gradient(ellipse at center,rgba(255,255,255,.8) 0 1px,transparent 2px),radial-gradient(ellipse at center,rgba(255,255,255,.7) 0 3px,transparent 4px); background-size:97px 113px,53px 71px,173px 191px; animation:seasonal-snowfall 15s linear infinite; opacity:.8; }
-            .seasonal-effect-snow::after { background-size:137px 151px,79px 101px,211px 233px; animation-duration:24s; animation-delay:-8s; opacity:.45; }
+            .dark body { --surface:#0d0b09; --surface-2:#1a1612; --ink:#faf7f2; --ink-muted:#9e8e7a; }
+            .seasonal-effect-snow::before,.seasonal-effect-snow::after { content:''; position:absolute; inset:-8rem 0 0; background-image:radial-gradient(ellipse at center,rgba(255,255,255,.9) 0 2px,transparent 3px),radial-gradient(ellipse at center,rgba(255,255,255,.65) 0 1px,transparent 2px); background-size:173px 191px,127px 163px; animation:seasonal-snowfall 20s linear infinite; opacity:.62; }
+            .seasonal-effect-snow::after { background-size:241px 271px,191px 223px; animation-duration:30s; animation-delay:-11s; opacity:.35; }
             .seasonal-effect-lanterns::before { content:'🏮'; position:absolute; top:1rem; left:12%; color:var(--accent-fill); font-size:3rem; filter:drop-shadow(0 0 12px var(--accent-fill)); animation:lantern-sway 4s ease-in-out infinite; }
             .seasonal-effect-lanterns::after { content:'🏮     ✦     🏮'; position:absolute; top:2rem; right:10%; color:var(--accent-fill); font-size:2rem; letter-spacing:1.5rem; animation:lantern-sway 5s ease-in-out infinite reverse; }
             .seasonal-effect-sheep::before { content:'🐑     🐑'; position:absolute; right:8%; bottom:2rem; font-size:2.5rem; animation:sheep-walk 14s linear infinite; }
@@ -56,7 +57,7 @@
             .seasonal-effect-stars::before { content:'✦  ·  ✧  ·  ✦  ·  ✧  ·  ✦'; position:absolute; inset:4rem 0 auto; color:var(--accent-fill); font-size:1.5rem; text-align:center; letter-spacing:1.5rem; animation:twinkle 3s ease-in-out infinite; }
             .seasonal-effect-stars::after { content:'✧       ✦       ✧'; position:absolute; inset:28% 0 auto; color:var(--accent-soft); font-size:1rem; text-align:center; animation:twinkle 4s ease-in-out infinite reverse; }
             .seasonal-effect-confetti::before { content:'✦  •  ✧  •  ✦  •  ✧  •  ✦'; position:absolute; inset:1rem 0 auto; color:var(--accent-fill); font-size:1.4rem; text-align:center; letter-spacing:1.2rem; animation:seasonal-float 4s ease-in-out infinite; }
-            .seasonal-effect-snow { background:linear-gradient(to top,rgba(255,255,255,.2),transparent 8%); }
+            .seasonal-effect-snow { background:linear-gradient(to top,rgba(255,255,255,.18),transparent 10%); }
             @keyframes seasonal-snowfall { 0% { transform:translate3d(-3vw,-8rem,0) rotate(0deg); } 50% { transform:translate3d(4vw,50vh,0) rotate(180deg); } 100% { transform:translate3d(-2vw,calc(100vh + 8rem),0) rotate(360deg); } }
             @keyframes seasonal-float { 50% { transform:translateY(1rem); opacity:.35; } }
             @keyframes lantern-sway { 0%,100% { transform:rotate(-4deg) translateY(0); } 50% { transform:rotate(4deg) translateY(8px); } }
@@ -92,7 +93,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="bg-surface text-ink antialiased" data-season-effect="{{ $activeTheme?->effect ?? 'none' }}" style="--surface: {{ $activeTheme?->surface ?? '#faf7f2' }}; --surface-2: {{ $activeTheme?->surface_2 ?? '#f2ece1' }}; --ink: {{ $activeTheme?->ink ?? '#1a1612' }}; --accent: {{ $activeTheme?->accent ?? '#8c6a3a' }}; --accent-fill: {{ $activeTheme?->accent_fill ?? '#c9a96e' }}; --accent-soft: {{ $activeTheme?->accent_soft ?? '#e8d5a3' }};">
+<body class="bg-surface text-ink antialiased" data-season-effect="{{ $activeTheme?->effect ?? 'none' }}" style="--theme-surface: {{ $activeTheme?->surface ?? '#faf7f2' }}; --theme-surface-2: {{ $activeTheme?->surface_2 ?? '#f2ece1' }}; --theme-ink: {{ $activeTheme?->ink ?? '#1a1612' }}; --accent: {{ $activeTheme?->accent ?? '#8c6a3a' }}; --accent-fill: {{ $activeTheme?->accent_fill ?? '#c9a96e' }}; --accent-soft: {{ $activeTheme?->accent_soft ?? '#e8d5a3' }};">
     @if ($activeTheme?->greeting || $activeTheme?->banner_image)
         <div class="seasonal-banner" role="status" @if ($activeTheme->banner_image) style="background-image:linear-gradient(90deg,rgba(13,11,9,.75),rgba(13,11,9,.35)),url('{{ Storage::disk('public')->url($activeTheme->banner_image) }}')" @endif>
             {{ $activeTheme->greeting }}

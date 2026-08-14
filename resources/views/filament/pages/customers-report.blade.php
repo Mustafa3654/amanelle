@@ -2,10 +2,24 @@
     @php($from = $this->from)
     @php($until = $this->until)
     @php($customers = $this->getCustomers())
-    <div class="space-y-6">
+    <div class="customer-report space-y-6">
         <form wire:submit="getCustomers" class="rounded-2xl border border-white/10 bg-gray-900/70 p-5"><div class="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Filter customers</div><div class="grid gap-4 md:grid-cols-2"><label class="text-sm text-gray-400">From<input type="date" wire:model.live="from" class="mt-1 block w-full rounded-lg border-gray-700 bg-gray-800 text-white"></label><label class="text-sm text-gray-400">Until<input type="date" wire:model.live="until" class="mt-1 block w-full rounded-lg border-gray-700 bg-gray-800 text-white"></label></div></form>
         <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 class="text-2xl font-semibold text-white">Customers</h2><div class="mt-1 text-sm text-gray-400">{{ \Carbon\Carbon::parse($from)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($until)->format('M d, Y') }}</div></div><div class="flex gap-2"><x-filament::button wire:click="export" icon="heroicon-o-arrow-down-tray" size="sm">Export CSV</x-filament::button><a href="{{ route('admin.customers.pdf', ['from' => $from, 'until' => $until]) }}" class="fi-btn fi-btn-size-sm fi-color-gray inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold"><x-filament::icon icon="heroicon-o-document-arrow-down" class="h-5 w-5" />Export PDF</a></div></div>
         <div class="grid gap-4 sm:grid-cols-3"><div class="rounded-2xl border border-white/10 bg-gray-900/70 p-5"><div class="text-sm text-gray-400">Customers</div><div class="mt-3 text-2xl font-semibold text-white">{{ $customers->count() }}</div></div><div class="rounded-2xl border border-white/10 bg-gray-900/70 p-5"><div class="text-sm text-gray-400">Orders represented</div><div class="mt-3 text-2xl font-semibold text-white">{{ $customers->sum('orders') }}</div></div><div class="rounded-2xl border border-white/10 bg-gray-900/70 p-5"><div class="text-sm text-gray-400">Total customer spend</div><div class="mt-3 text-2xl font-semibold text-emerald-300">${{ number_format($customers->sum('total'), 2) }}</div></div></div>
         <div class="overflow-x-auto rounded-2xl border border-white/10 bg-gray-900/70 p-5"><table class="w-full min-w-[900px] text-sm"><thead><tr class="border-b border-white/10 text-left text-xs uppercase tracking-wider text-gray-500"><th class="px-4 py-3">Customer</th><th class="px-4 py-3">Contact</th><th class="px-4 py-3">Location</th><th class="px-4 py-3 text-right">Orders</th><th class="px-4 py-3 text-right">Total spent</th><th class="px-4 py-3">Last order</th></tr></thead><tbody>@forelse($customers as $customer)<tr class="border-b border-white/5"><td class="px-4 py-4 font-medium text-white">{{ $customer['name'] }}</td><td class="px-4 py-4 text-gray-400">{{ $customer['phone'] }}<br>{{ $customer['email'] ?: 'No email' }}</td><td class="px-4 py-4 text-gray-400">{{ $customer['city'] }}<br>{{ $customer['address'] }}</td><td class="px-4 py-4 text-right text-gray-300">{{ $customer['orders'] }}</td><td class="px-4 py-4 text-right font-semibold text-emerald-300">${{ number_format($customer['total'], 2) }}</td><td class="px-4 py-4 text-gray-400">{{ $customer['last_order']?->format('M d, Y') }}</td></tr>@empty<tr><td colspan="6" class="p-12 text-center text-gray-400">No customers found.</td></tr>@endforelse</tbody></table></div>
     </div>
+    <style>
+        .customer-report form { display:block; padding:20px; background:#18181b; border:1px solid #2f3035; border-radius:14px; }
+        .customer-report form > div:last-child { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+        .customer-report label { display:block; color:#a1a1aa; }
+        .customer-report input { display:block; width:100%; margin-top:6px; padding:9px 11px; border:1px solid #3f4148; border-radius:8px; background:#202126; color:#fff; }
+        .customer-report > div:nth-child(2) { background:#18181b!important; border:1px solid #2f3035; border-radius:14px; padding:20px; }
+        .customer-report > div:nth-child(3) { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+        .customer-report > div:nth-child(3) > div { background:#18181b; border:1px solid #2f3035; border-radius:12px; padding:18px; }
+        .customer-report > div:last-child { overflow:auto; background:#18181b; border:1px solid #2f3035; border-radius:14px; padding:8px; }
+        .customer-report table { width:100%; min-width:850px; border-collapse:collapse; }
+        .customer-report th { padding:13px 16px; background:#25262a; color:#f4f4f5; text-align:left; font-size:12px; }
+        .customer-report td { padding:14px 16px; border-top:1px solid #2f3035; color:#d4d4d8; }
+        @media(max-width:700px){.customer-report form > div:last-child,.customer-report > div:nth-child(3){grid-template-columns:1fr}.customer-report .flex{flex-wrap:wrap}}
+    </style>
 </x-filament-panels::page>

@@ -106,6 +106,16 @@ Route::get('/admin/profit-loss-report/export-pdf', function (Request $request) {
     ])->setPaper('a4', 'landscape')->download('profit-loss-'.$page->from.'-to-'.$page->until.'.pdf');
 })->name('admin.profit-loss.pdf');
 
+Route::get('/admin/orders/export-pdf', function () {
+    abort_unless(auth()->check(), 403);
+
+    $orders = \App\Models\Order::with('items')->latest('placed_at')->get();
+
+    return \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.orders-pdf', [
+        'orders' => $orders,
+    ])->setPaper('a4', 'landscape')->download('amanelle-orders-'.now()->format('Y-m-d').'.pdf');
+})->name('admin.orders.pdf');
+
 Route::post('/contact', function (Request $request) {
     $data = $request->validate([
         'name' => ['required', 'string', 'max:120'],

@@ -194,8 +194,7 @@ class OrdersTable
                     ->label(__('Export PDF'))
                     ->icon('heroicon-o-document-arrow-down')
                     ->color('gray')
-                    ->url('#')
-                    ->extraAttributes(['onclick' => 'window.print(); return false;']),
+                    ->url(route('admin.orders.pdf')),
             ]);
     }
 }

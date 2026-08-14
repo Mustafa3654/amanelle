@@ -1,4 +1,8 @@
 <x-mail::message>
+<div style="text-align: center; margin-bottom: 24px;">
+    <img src="{{ asset('images/logo.jpeg') }}" alt="{{ config('app.name') }}" style="display: inline-block; width: 150px; height: auto; border: 0;">
+</div>
+
 # New enquiry
 
 **{{ $enquiry->name }}**

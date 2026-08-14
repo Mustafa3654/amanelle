@@ -1,6 +1,7 @@
 @php
     $locale = app()->getLocale();
     $dir = in_array($locale, config('amanelle.rtl_locales', ['ar'])) ? 'rtl' : 'ltr';
+    $activeTheme = \App\Models\Theme::active();
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', $locale) }}" dir="{{ $dir }}">
@@ -37,7 +38,7 @@
     <meta name="twitter:description" content="{{ $metaDescription }}">
     <meta name="twitter:image" content="{{ $metaImage }}">
 
-    <meta name="theme-color" content="#0d0b09">
+    <meta name="theme-color" content="{{ $activeTheme?->surface ?? '#0d0b09' }}">
 
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{{ asset('images/logo.jpeg') }}">
@@ -69,7 +70,15 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="bg-surface text-ink antialiased">
+<body class="bg-surface text-ink antialiased" data-season-effect="{{ $activeTheme?->effect ?? 'none' }}" style="--surface: {{ $activeTheme?->surface ?? '#faf7f2' }}; --surface-2: {{ $activeTheme?->surface_2 ?? '#f2ece1' }}; --ink: {{ $activeTheme?->ink ?? '#1a1612' }}; --accent: {{ $activeTheme?->accent ?? '#8c6a3a' }}; --accent-fill: {{ $activeTheme?->accent_fill ?? '#c9a96e' }}; --accent-soft: {{ $activeTheme?->accent_soft ?? '#e8d5a3' }};">
+    @if ($activeTheme?->greeting || $activeTheme?->banner_image)
+        <div class="seasonal-banner" role="status" @if ($activeTheme->banner_image) style="background-image:linear-gradient(90deg,rgba(13,11,9,.75),rgba(13,11,9,.35)),url('{{ Storage::disk('public')->url($activeTheme->banner_image) }}')" @endif>
+            {{ $activeTheme->greeting }}
+        </div>
+    @endif
+    @if (($activeTheme?->effect ?? 'none') !== 'none')
+        <div class="seasonal-effect seasonal-effect-{{ $activeTheme->effect }}" aria-hidden="true"></div>
+    @endif
     @include('partials.header')
 
     <main>

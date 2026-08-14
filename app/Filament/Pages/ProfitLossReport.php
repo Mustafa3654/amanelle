@@ -3,7 +3,6 @@
 namespace App\Filament\Pages;
 
 use App\Models\Order;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
@@ -84,15 +83,4 @@ class ProfitLossReport extends Page
         }, 'profit-loss-'.$this->from.'-to-'.$this->until.'.csv');
     }
 
-    public function exportPdf()
-    {
-        $report = $this->getReport();
-
-        return Pdf::loadView('reports.profit-loss-pdf', [
-            'report' => $report,
-            'from' => $this->from,
-            'until' => $this->until,
-            'currency' => $this->currency,
-        ])->setPaper('a4', 'landscape')->download('profit-loss-'.$this->from.'-to-'.$this->until.'.pdf');
-    }
 }

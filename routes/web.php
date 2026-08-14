@@ -90,6 +90,22 @@ Route::view('/about', 'about')->name('about');
 
 Route::get('/contact', fn () => view('contact'))->name('contact');
 
+Route::get('/admin/profit-loss-report/export-pdf', function (Request $request) {
+    abort_unless(auth()->check(), 403);
+
+    $page = app(\App\Filament\Pages\ProfitLossReport::class);
+    $page->from = $request->string('from')->toString() ?: now()->startOfMonth()->toDateString();
+    $page->until = $request->string('until')->toString() ?: now()->toDateString();
+    $page->currency = $request->string('currency')->toString() ?: 'all';
+
+    return \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.profit-loss-pdf', [
+        'report' => $page->getReport(),
+        'from' => $page->from,
+        'until' => $page->until,
+        'currency' => $page->currency,
+    ])->setPaper('a4', 'landscape')->download('profit-loss-'.$page->from.'-to-'.$page->until.'.pdf');
+})->name('admin.profit-loss.pdf');
+
 Route::post('/contact', function (Request $request) {
     $data = $request->validate([
         'name' => ['required', 'string', 'max:120'],

@@ -48,14 +48,15 @@
             .seasonal-banner { position:relative; z-index:30; min-height:42px; display:grid; place-items:center; padding:.65rem 1rem; background:var(--accent-fill); background-position:center; background-size:cover; color:#fff; font-size:.8rem; font-weight:600; text-align:center; }
             .seasonal-effect { pointer-events:none; position:fixed; inset:0; z-index:40; overflow:hidden; }
             .dark body { --surface:#0d0b09; --surface-2:#1a1612; --ink:#faf7f2; --ink-muted:#9e8e7a; }
-            .seasonal-effect-snow::before,.seasonal-effect-snow::after { content:''; position:absolute; inset:-8rem 0 0; background-image:radial-gradient(ellipse at center,rgba(255,255,255,.9) 0 2px,transparent 3px),radial-gradient(ellipse at center,rgba(255,255,255,.65) 0 1px,transparent 2px); background-size:173px 191px,127px 163px; animation:seasonal-snowfall 20s linear infinite; opacity:.62; }
-            .seasonal-effect-snow::after { background-size:241px 271px,191px 223px; animation-duration:30s; animation-delay:-11s; opacity:.35; }
-            .seasonal-effect-lanterns::before { content:'🏮'; position:absolute; top:1rem; left:12%; color:var(--accent-fill); font-size:3rem; filter:drop-shadow(0 0 12px var(--accent-fill)); animation:lantern-sway 4s ease-in-out infinite; }
-            .seasonal-effect-lanterns::after { content:'🏮     ✦     🏮'; position:absolute; top:2rem; right:10%; color:var(--accent-fill); font-size:2rem; letter-spacing:1.5rem; animation:lantern-sway 5s ease-in-out infinite reverse; }
-            .seasonal-effect-sheep::before { content:'🐑     🐑'; position:absolute; right:8%; bottom:2rem; font-size:2.5rem; animation:sheep-walk 14s linear infinite; }
-            .seasonal-effect-sheep::after { content:'✦     ✦     ✦'; position:absolute; inset:20% 0 auto; color:var(--accent-fill); font-size:1.4rem; text-align:center; animation:seasonal-float 5s ease-in-out infinite; }
-            .seasonal-effect-stars::before { content:'✦  ·  ✧  ·  ✦  ·  ✧  ·  ✦'; position:absolute; inset:4rem 0 auto; color:var(--accent-fill); font-size:1.5rem; text-align:center; letter-spacing:1.5rem; animation:twinkle 3s ease-in-out infinite; }
-            .seasonal-effect-stars::after { content:'✧       ✦       ✧'; position:absolute; inset:28% 0 auto; color:var(--accent-soft); font-size:1rem; text-align:center; animation:twinkle 4s ease-in-out infinite reverse; }
+            .seasonal-effect-snow::before,.seasonal-effect-snow::after { content:''; position:absolute; inset:-8rem 0 0; background-image:radial-gradient(circle,rgba(255,255,255,.96) 0 1.7px,transparent 2.4px),radial-gradient(circle,rgba(255,255,255,.72) 0 1px,transparent 1.8px),radial-gradient(circle,rgba(255,255,255,.56) 0 2.5px,transparent 3.2px); background-size:181px 229px,119px 163px,317px 359px; animation:seasonal-snowfall 24s linear infinite; opacity:.55; }
+            .seasonal-effect-snow::after { background-size:263px 307px,173px 211px,401px 467px; animation-duration:37s; animation-delay:-16s; opacity:.3; }
+            .seasonal-snow-cap { position:fixed; z-index:29; top:0; left:0; right:0; height:20px; pointer-events:none; background:radial-gradient(16px 10px at 18px 100%,#fff 98%,transparent 100%) 0 0/42px 20px repeat-x,linear-gradient(#fff,#eef5fb); filter:drop-shadow(0 2px 2px rgba(15,23,42,.12)); }
+            .seasonal-effect-lanterns::before { content:'🏮'; position:absolute; top:1rem; left:10%; font-size:3.2rem; filter:drop-shadow(0 0 18px var(--accent-fill)); transform-origin:top center; animation:lantern-sway 4s ease-in-out infinite; }
+            .seasonal-effect-lanterns::after { content:'🏮                 🏮'; position:absolute; top:2.25rem; left:0; right:0; color:var(--accent-fill); font-size:2.4rem; text-align:center; filter:drop-shadow(0 0 14px var(--accent-fill)); transform-origin:top center; animation:lantern-sway 5.5s ease-in-out infinite reverse; }
+            .seasonal-effect-sheep::before { content:'🐑     🐑'; position:absolute; right:-8rem; bottom:1.4rem; font-size:2.5rem; filter:drop-shadow(0 5px 6px rgba(0,0,0,.2)); animation:sheep-walk 18s linear infinite; }
+            .seasonal-effect-sheep::after { content:'✦     ✦     ✦'; position:absolute; inset:18% 0 auto; color:var(--accent-fill); font-size:1.4rem; text-align:center; letter-spacing:3rem; animation:seasonal-float 5s ease-in-out infinite; }
+            .seasonal-effect-stars::before { content:'✦  ·  ✧  ·  ✦  ·  ✧  ·  ✦'; position:absolute; inset:4rem 0 auto; color:var(--accent-fill); font-size:1.45rem; text-align:center; letter-spacing:1.6rem; animation:twinkle 3s ease-in-out infinite; }
+            .seasonal-effect-stars::after { content:'✧       ✦       ✧'; position:absolute; inset:30% 0 auto; color:var(--accent-soft); font-size:1rem; text-align:center; letter-spacing:8rem; animation:twinkle 4.5s ease-in-out infinite reverse; }
             .seasonal-effect-confetti::before { content:'✦  •  ✧  •  ✦  •  ✧  •  ✦'; position:absolute; inset:1rem 0 auto; color:var(--accent-fill); font-size:1.4rem; text-align:center; letter-spacing:1.2rem; animation:seasonal-float 4s ease-in-out infinite; }
             .seasonal-effect-snow { background:linear-gradient(to top,rgba(255,255,255,.18),transparent 10%); }
             @keyframes seasonal-snowfall { 0% { transform:translate3d(-3vw,-8rem,0) rotate(0deg); } 50% { transform:translate3d(4vw,50vh,0) rotate(180deg); } 100% { transform:translate3d(-2vw,calc(100vh + 8rem),0) rotate(360deg); } }
@@ -63,6 +64,7 @@
             @keyframes lantern-sway { 0%,100% { transform:rotate(-4deg) translateY(0); } 50% { transform:rotate(4deg) translateY(8px); } }
             @keyframes sheep-walk { from { transform:translateX(15vw); } to { transform:translateX(-115vw); } }
             @keyframes twinkle { 0%,100% { opacity:.25; transform:scale(.85); } 50% { opacity:1; transform:scale(1.15); } }
+            @media (prefers-reduced-motion:reduce) { .seasonal-effect::before,.seasonal-effect::after { animation:none!important; } }
         </style>
     @endif
 
@@ -101,6 +103,7 @@
     @endif
     @if (($activeTheme?->effect ?? 'none') !== 'none')
         <div class="seasonal-effect seasonal-effect-{{ $activeTheme->effect }}" aria-hidden="true"></div>
+        @if ($activeTheme->effect === 'snow')<div class="seasonal-snow-cap" aria-hidden="true"></div>@endif
     @endif
     @include('partials.header')
 

@@ -43,7 +43,13 @@ class ProfitLossReport extends Page
         return [
             Action::make('export')
                 ->label(__('Export CSV'))
+                ->icon('heroicon-o-arrow-down-tray')
                 ->action(fn () => $this->export()),
+            Action::make('pdf')
+                ->label(__('Export PDF'))
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('gray')
+                ->extraAttributes(['onclick' => 'window.print(); return false;']),
         ];
     }
 

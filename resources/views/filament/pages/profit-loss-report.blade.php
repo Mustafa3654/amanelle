@@ -1,28 +1,26 @@
 <x-filament-panels::page>
-    <form wire:submit="getReport" class="grid gap-4 md:grid-cols-3">
-        {{ $this->form }}
-    </form>
-
     @php($report = $this->getReport())
-    <div class="grid gap-4 md:grid-cols-4">
-        @foreach ([['Revenue', $report['revenue']], ['Cost of goods sold', $report['cost']], ['Gross profit', $report['profit']], ['Margin', number_format($report['margin'], 2).'%']] as [$label, $value])
-            <div class="rounded-xl bg-gray-900 p-5 ring-1 ring-white/10">
-                <div class="text-sm text-gray-400">{{ $label }}</div>
-                <div class="mt-2 text-2xl font-semibold">{{ is_numeric($value) && $label !== 'Margin' ? '$'.number_format($value, 2) : $value }}</div>
+    @php($currencyLabel = $currency === 'all' ? 'All currencies' : $currency)
+    <div class="report-shell space-y-6">
+        <section class="report-hero overflow-hidden rounded-3xl p-6 shadow-xl sm:p-8">
+            <div class="relative z-10 flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
+                <div><div class="mb-4 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.25em] text-amber-200/80"><span class="h-2 w-2 rounded-full bg-amber-300"></span> Financial overview</div><h2 class="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Profit &amp; Loss</h2><p class="mt-2 max-w-xl text-sm text-white/65">A clear view of your delivered sales performance, product profitability, and operating margin.</p></div>
+                <div class="text-left lg:text-right"><div class="text-xs uppercase tracking-widest text-white/45">Reporting period</div><div class="mt-1 text-lg font-medium text-white">{{ \Carbon\Carbon::parse($from)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($until)->format('M d, Y') }}</div><div class="mt-1 text-xs text-amber-200/70">{{ $currencyLabel }}</div></div>
             </div>
-        @endforeach
-    </div>
+        </section>
 
-    <div class="overflow-x-auto rounded-xl bg-gray-900 ring-1 ring-white/10">
-        <table class="w-full text-sm">
-            <thead><tr class="border-b border-white/10 text-left"><th class="p-4">Product</th><th class="p-4">Variant</th><th class="p-4">Qty</th><th class="p-4">Revenue</th><th class="p-4">Cost</th><th class="p-4">Profit</th></tr></thead>
-            <tbody>
-                @forelse ($report['items'] as $item)
-                    <tr class="border-b border-white/5"><td class="p-4">{{ $item['product_name'] }}</td><td class="p-4">{{ $item['variant_label'] }}</td><td class="p-4">{{ $item['quantity'] }}</td><td class="p-4">${{ number_format($item['revenue'], 2) }}</td><td class="p-4">${{ number_format($item['cost'], 2) }}</td><td class="p-4">${{ number_format($item['profit'], 2) }}</td></tr>
-                @empty
-                    <tr><td colspan="6" class="p-8 text-center text-gray-400">No delivered sales in this period.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+        <form wire:submit="getReport" class="report-filters rounded-2xl p-4 sm:p-5"><div class="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Filter report</div><div class="grid gap-4 md:grid-cols-3">{{ $this->form }}</div></form>
+
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            @foreach ([['Revenue', $report['revenue'], 'heroicon-o-arrow-trending-up', 'text-sky-300'], ['Cost of goods sold', $report['cost'], 'heroicon-o-receipt-percent', 'text-orange-300'], ['Gross profit', $report['profit'], 'heroicon-o-banknotes', 'text-emerald-300'], ['Margin', number_format($report['margin'], 2).'%', 'heroicon-o-chart-pie', 'text-violet-300']] as [$label, $value, $icon, $color])
+                <div class="report-card rounded-2xl p-5"><div class="flex items-center justify-between"><span class="text-sm text-gray-400">{{ $label }}</span><x-filament::icon :icon="$icon" class="h-5 w-5 {{ $color }}" /></div><div class="mt-4 text-2xl font-semibold tracking-tight text-white">{{ $label === 'Margin' ? $value : '$'.number_format($value, 2) }}</div>@if ($label === 'Gross profit')<div class="mt-2 text-xs text-emerald-300/80">Net earnings after product costs</div>@endif</div>
+            @endforeach
+        </div>
+
+        <section class="report-card rounded-2xl p-5 sm:p-6"><div class="mb-5 flex items-end justify-between gap-4"><div><h3 class="text-lg font-semibold text-white">Product performance</h3><p class="mt-1 text-sm text-gray-400">Delivered sales grouped by product and variant</p></div><div class="text-right text-xs text-gray-500">{{ count($report['items']) }} {{ count($report['items']) === 1 ? 'line item' : 'line items' }}</div></div><div class="overflow-x-auto"><table class="w-full min-w-[680px] text-sm"><thead><tr class="border-b border-white/10 text-left text-xs uppercase tracking-wider text-gray-500"><th class="px-4 py-3 font-medium">Product</th><th class="px-4 py-3 font-medium">Variant</th><th class="px-4 py-3 text-right font-medium">Qty</th><th class="px-4 py-3 text-right font-medium">Revenue</th><th class="px-4 py-3 text-right font-medium">Cost</th><th class="px-4 py-3 text-right font-medium">Profit</th></tr></thead><tbody>@forelse ($report['items'] as $item)<tr class="report-row border-b border-white/5"><td class="px-4 py-4 font-medium text-white">{{ $item['product_name'] }}</td><td class="px-4 py-4 text-gray-400">{{ $item['variant_label'] }}</td><td class="px-4 py-4 text-right text-gray-300">{{ $item['quantity'] }}</td><td class="px-4 py-4 text-right text-gray-300">${{ number_format($item['revenue'], 2) }}</td><td class="px-4 py-4 text-right text-gray-400">${{ number_format($item['cost'], 2) }}</td><td class="px-4 py-4 text-right font-semibold text-emerald-300">${{ number_format($item['profit'], 2) }}</td></tr>@empty<tr><td colspan="6" class="p-12 text-center text-gray-400">No delivered sales in this period.</td></tr>@endforelse</tbody><tfoot><tr class="text-white"><td colspan="3" class="px-4 py-4 text-xs font-semibold uppercase tracking-wider text-gray-400">Total</td><td class="px-4 py-4 text-right font-semibold">${{ number_format($report['revenue'], 2) }}</td><td class="px-4 py-4 text-right font-semibold">${{ number_format($report['cost'], 2) }}</td><td class="px-4 py-4 text-right font-semibold text-emerald-300">${{ number_format($report['profit'], 2) }}</td></tr></tfoot></table></div></section>
     </div>
+    <style>
+        .report-hero { background: radial-gradient(circle at 90% 10%, rgba(245,183,72,.2), transparent 35%), linear-gradient(135deg,#172554 0%,#312e81 48%,#111827 100%); position:relative; } .report-hero::after { content:''; position:absolute; inset:auto -5% -65% 45%; height:18rem; border:1px solid rgba(255,255,255,.08); border-radius:999px; transform:rotate(-18deg); } .report-card,.report-filters { background:rgba(17,24,39,.72); border:1px solid rgba(255,255,255,.08); box-shadow:0 12px 35px rgba(0,0,0,.12); } .report-row { transition:background .2s ease; } .report-row:hover { background:rgba(255,255,255,.035); }
+        @media print { .fi-sidebar,.fi-topbar,.fi-header,.report-filters,button,[role="button"] { display:none!important; } .fi-main,.fi-page { padding:0!important; } .report-card,.report-hero { box-shadow:none; } }
+    </style>
 </x-filament-panels::page>

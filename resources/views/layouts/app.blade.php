@@ -43,6 +43,20 @@
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="apple-touch-icon" href="{{ asset('images/logo.jpeg') }}">
 
+    @if ($activeTheme)
+        <style>
+            .seasonal-banner { position:relative; z-index:30; min-height:42px; display:grid; place-items:center; padding:.65rem 1rem; background:var(--accent-fill); background-position:center; background-size:cover; color:#fff; font-size:.8rem; font-weight:600; text-align:center; }
+            .seasonal-effect { pointer-events:none; position:fixed; inset:0; z-index:40; overflow:hidden; }
+            .seasonal-effect-snow::before { content:'❄  ·  ❄   ·   ❄  ·  ❄   ·   ❄'; position:absolute; inset:-2rem 0 auto; color:#fff; font-size:1.8rem; letter-spacing:2rem; animation:seasonal-fall 10s linear infinite; opacity:.85; white-space:nowrap; }
+            .seasonal-effect-lanterns::before { content:'✦   🏮      ✦      🏮   ✦'; position:absolute; inset:1rem 0 auto; color:var(--accent-fill); font-size:2rem; text-align:center; letter-spacing:1rem; }
+            .seasonal-effect-sheep::before { content:'🐑      ✦      🐑'; position:absolute; inset:auto 0 2rem; font-size:2rem; text-align:center; }
+            .seasonal-effect-stars::before { content:'✦  ·  ✧  ·  ✦  ·  ✧  ·  ✦'; position:absolute; inset:4rem 0 auto; color:var(--accent-fill); font-size:1.5rem; text-align:center; letter-spacing:1.5rem; }
+            .seasonal-effect-confetti::before { content:'✦  •  ✧  •  ✦  •  ✧  •  ✦'; position:absolute; inset:1rem 0 auto; color:var(--accent-fill); font-size:1.4rem; text-align:center; letter-spacing:1.2rem; animation:seasonal-float 4s ease-in-out infinite; }
+            @keyframes seasonal-fall { from { transform:translateY(-2rem); } to { transform:translateY(100vh); } }
+            @keyframes seasonal-float { 50% { transform:translateY(1rem); opacity:.35; } }
+        </style>
+    @endif
+
     {{-- Runs before first paint so the page never flashes light then snaps to
          dark. Reads the stored choice, falls back to the OS. Deliberately
          inline and blocking — deferring it is the flash. --}}

@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class CustomersReport extends Page
 {
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
-    protected static string $view = 'filament.pages.customers-report';
+    protected string $view = 'filament.pages.customers-report';
 
     public static function getNavigationGroup(): ?string
     {

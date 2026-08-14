@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\HasTranslations;
+use Illuminate\Support\Str;
 
 class ProductVariant extends Model
 {
@@ -15,6 +16,30 @@ class ProductVariant extends Model
     protected $guarded = [];
 
     public array $translatable = ['shade_name'];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $variant): void {
+            $product = $variant->relationLoaded('product')
+                ? $variant->product
+                : Product::find($variant->product_id);
+            $prefix = str($product?->slug ?: 'PRODUCT')->upper()->replace('-', '')->limit(12, '');
+
+            if (blank($variant->sku)) {
+                do {
+                    $sku = 'SKU-'.$prefix.'-'.str()->upper(Str::random(6));
+                } while (self::where('sku', $sku)->exists());
+                $variant->sku = $sku;
+            }
+
+            if (blank($variant->item_code)) {
+                do {
+                    $itemCode = 'ITEM-'.str()->upper(Str::random(8));
+                } while (self::where('item_code', $itemCode)->exists());
+                $variant->item_code = $itemCode;
+            }
+        });
+    }
 
     protected function casts(): array
     {

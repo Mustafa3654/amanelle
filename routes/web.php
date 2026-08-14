@@ -119,6 +119,8 @@ Route::get('/admin/orders/export-pdf', function () {
 Route::get('/admin/customers/export-pdf', function () {
     abort_unless(auth()->check(), 403);
     $page = app(\App\Filament\Pages\CustomersReport::class);
+    $page->from = request('from') ?: now()->startOfMonth()->toDateString();
+    $page->until = request('until') ?: now()->toDateString();
 
     return \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.customers-pdf', [
         'customers' => $page->getCustomers(),

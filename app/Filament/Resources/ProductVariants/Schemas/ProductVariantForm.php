@@ -43,15 +43,6 @@ class ProductVariantForm
                         ->live()
                         ->helperText(__('The product this size or shade belongs to.')),
 
-                    TextInput::make('sku')
-                        ->label(__('SKU'))
-                        ->required()
-                        ->unique(ignoreRecord: true),
-
-                    TextInput::make('item_code')
-                        ->label(__('Item code'))
-                        ->unique(ignoreRecord: true),
-
                     TextInput::make('sort_order')->label(__('Sort order'))->numeric()->default(0),
 
                     TextInput::make('volume_ml')

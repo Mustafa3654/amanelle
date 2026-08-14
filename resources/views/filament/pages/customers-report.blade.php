@@ -9,12 +9,12 @@
         <div class="overflow-x-auto rounded-2xl border border-white/10 bg-gray-900/70 p-5"><table class="w-full min-w-[900px] text-sm"><thead><tr class="border-b border-white/10 text-left text-xs uppercase tracking-wider text-gray-500"><th class="px-4 py-3">Customer</th><th class="px-4 py-3">Contact</th><th class="px-4 py-3">Location</th><th class="px-4 py-3 text-right">Orders</th><th class="px-4 py-3 text-right">Total spent</th><th class="px-4 py-3">Last order</th></tr></thead><tbody>@forelse($customers as $customer)<tr class="border-b border-white/5"><td class="px-4 py-4 font-medium text-white">{{ $customer['name'] }}</td><td class="px-4 py-4 text-gray-400">{{ $customer['phone'] }}<br>{{ $customer['email'] ?: 'No email' }}</td><td class="px-4 py-4 text-gray-400">{{ $customer['city'] }}<br>{{ $customer['address'] }}</td><td class="px-4 py-4 text-right text-gray-300">{{ $customer['orders'] }}</td><td class="px-4 py-4 text-right font-semibold text-emerald-300">${{ number_format($customer['total'], 2) }}</td><td class="px-4 py-4 text-gray-400">{{ $customer['last_order']?->format('M d, Y') }}</td></tr>@empty<tr><td colspan="6" class="p-12 text-center text-gray-400">No customers found.</td></tr>@endforelse</tbody></table></div>
     </div>
     <style>
-        .customer-report form { display:block; padding:20px; background:#18181b; border:1px solid #2f3035; border-radius:14px; }
+        .customer-report form { display:block; margin-bottom:16px; padding:20px; background:#18181b; border:1px solid #2f3035; border-radius:14px; }
         .customer-report form > div:last-child { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
         .customer-report label { display:block; color:#a1a1aa; }
         .customer-report input { display:block; width:100%; margin-top:6px; padding:9px 11px; border:1px solid #3f4148; border-radius:8px; background:#202126; color:#fff; }
-        .customer-report > div:nth-child(2) { background:#18181b!important; border:1px solid #2f3035; border-radius:14px; padding:20px; }
-        .customer-report > div:nth-child(3) { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+        .customer-report > div:nth-child(2) { margin-bottom:16px; background:#18181b!important; border:1px solid #2f3035; border-radius:14px; padding:20px; }
+        .customer-report > div:nth-child(3) { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-bottom:16px; }
         .customer-report > div:nth-child(3) > div { background:#18181b; border:1px solid #2f3035; border-radius:12px; padding:18px; }
         .customer-report > div:last-child { overflow:auto; background:#18181b; border:1px solid #2f3035; border-radius:14px; padding:8px; }
         .customer-report table { width:100%; min-width:850px; border-collapse:collapse; }

@@ -3,7 +3,6 @@
 namespace App\Filament\Pages;
 
 use App\Models\Order;
-use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
@@ -36,21 +35,6 @@ class ProfitLossReport extends Page
     {
         $this->from = now()->startOfMonth()->toDateString();
         $this->until = now()->toDateString();
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Action::make('export')
-                ->label(__('Export CSV'))
-                ->icon('heroicon-o-arrow-down-tray')
-                ->action(fn () => $this->export()),
-            Action::make('pdf')
-                ->label(__('Export PDF'))
-                ->icon('heroicon-o-document-arrow-down')
-                ->color('gray')
-                ->extraAttributes(['onclick' => 'window.print(); return false;']),
-        ];
     }
 
     public function form(Schema $form): Schema

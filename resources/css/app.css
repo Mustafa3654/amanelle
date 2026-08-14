@@ -191,13 +191,21 @@
     }
 
     .seasonal-effect { pointer-events: none; position: fixed; inset: 0; z-index: 40; overflow: hidden; }
-    .seasonal-effect-snow::before { content: '❄  ·  ❄   ·   ❄  ·  ❄   ·   ❄  ·  ❄'; position: absolute; inset: -2rem 0 auto; color: white; font-size: 1.8rem; letter-spacing: 2rem; animation: seasonal-fall 10s linear infinite; opacity: .8; white-space: nowrap; }
-    .seasonal-effect-lanterns::before { content: '✦   🏮      ✦      🏮   ✦'; position:absolute; inset:1rem 0 auto; text-align:center; color:var(--accent-fill); font-size:2rem; letter-spacing:1rem; opacity:.8; }
-    .seasonal-effect-sheep::before { content: '🐑      ✦      🐑'; position:absolute; inset:auto 0 2rem; text-align:center; font-size:2rem; opacity:.85; }
-    .seasonal-effect-stars::before { content: '✦  ·  ✧  ·  ✦  ·  ✧  ·  ✦'; position:absolute; inset:4rem 0 auto; text-align:center; color:var(--accent-fill); font-size:1.5rem; letter-spacing:1.5rem; opacity:.7; }
-    .seasonal-effect-confetti::before { content: '✦  •  ✧  •  ✦  •  ✧  •  ✦'; position:absolute; inset:1rem 0 auto; text-align:center; color:var(--accent-fill); font-size:1.4rem; letter-spacing:1.2rem; animation: seasonal-float 4s ease-in-out infinite; }
-    @keyframes seasonal-fall { from { transform:translateY(-2rem); } to { transform:translateY(100vh); } }
+    .seasonal-effect-snow::before,.seasonal-effect-snow::after { content:''; position:absolute; inset:-12rem 0 0; background-image:radial-gradient(ellipse at center,rgb(255 255 255 / .95) 0 2px,transparent 3px),radial-gradient(ellipse at center,rgb(255 255 255 / .8) 0 1px,transparent 2px),radial-gradient(ellipse at center,rgb(255 255 255 / .7) 0 3px,transparent 4px); background-size:97px 113px,53px 71px,173px 191px; animation:seasonal-snowfall 15s linear infinite; opacity:.8; }
+    .seasonal-effect-snow::after { background-size:137px 151px,79px 101px,211px 233px; animation-duration:24s; animation-delay:-8s; opacity:.45; }
+    .seasonal-effect-snow { background:linear-gradient(to top,rgb(255 255 255 / .2),transparent 8%); }
+    .seasonal-effect-lanterns::before { content:'🏮'; position:absolute; top:1rem; left:12%; font-size:3rem; filter:drop-shadow(0 0 12px var(--accent-fill)); animation:lantern-sway 4s ease-in-out infinite; }
+    .seasonal-effect-lanterns::after { content:'🏮     ✦     🏮'; position:absolute; top:2rem; right:10%; color:var(--accent-fill); font-size:2rem; letter-spacing:1.5rem; opacity:.8; animation:lantern-sway 5s ease-in-out infinite reverse; }
+    .seasonal-effect-sheep::before { content:'🐑     🐑'; position:absolute; right:8%; bottom:2rem; font-size:2.5rem; filter:drop-shadow(0 5px 5px rgb(0 0 0 / .2)); animation:sheep-walk 14s linear infinite; }
+    .seasonal-effect-sheep::after { content:'✦     ✦     ✦'; position:absolute; inset:20% 0 auto; color:var(--accent-fill); font-size:1.4rem; text-align:center; animation:seasonal-float 5s ease-in-out infinite; }
+    .seasonal-effect-stars::before { content:'✦  ·  ✧  ·  ✦  ·  ✧  ·  ✦'; position:absolute; inset:4rem 0 auto; color:var(--accent-fill); font-size:1.5rem; text-align:center; letter-spacing:1.5rem; animation:twinkle 3s ease-in-out infinite; }
+    .seasonal-effect-stars::after { content:'✧       ✦       ✧'; position:absolute; inset:28% 0 auto; color:var(--accent-soft); font-size:1rem; text-align:center; animation:twinkle 4s ease-in-out infinite reverse; }
+    .seasonal-effect-confetti::before { content:'✦  •  ✧  •  ✦  •  ✧  •  ✦'; position:absolute; inset:1rem 0 auto; color:var(--accent-fill); font-size:1.4rem; text-align:center; letter-spacing:1.2rem; animation:seasonal-float 4s ease-in-out infinite; }
+    @keyframes seasonal-snowfall { 0% { transform:translate3d(-3vw,-8rem,0) rotate(0deg); } 50% { transform:translate3d(4vw,50vh,0) rotate(180deg); } 100% { transform:translate3d(-2vw,calc(100vh + 8rem),0) rotate(360deg); } }
     @keyframes seasonal-float { 50% { transform:translateY(1rem); opacity:.35; } }
+    @keyframes lantern-sway { 0%,100% { transform:rotate(-4deg) translateY(0); } 50% { transform:rotate(4deg) translateY(8px); } }
+    @keyframes sheep-walk { from { transform:translateX(15vw); } to { transform:translateX(-115vw); } }
+    @keyframes twinkle { 0%,100% { opacity:.25; transform:scale(.85); } 50% { opacity:1; transform:scale(1.15); } }
 
     /* The wordmark's wide tracking pushes a trailing gap on the last letter,
        which visually de-centres it. Only correct on the side the gap lands on,

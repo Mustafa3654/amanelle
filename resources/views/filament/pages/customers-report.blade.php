@@ -1,4 +1,6 @@
 <x-filament-panels::page>
+    @php($from = $this->from)
+    @php($until = $this->until)
     @php($customers = $this->getCustomers())
     <div class="space-y-6">
         <form wire:submit="getCustomers" class="rounded-2xl border border-white/10 bg-gray-900/70 p-5"><div class="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Filter customers</div><div class="grid gap-4 md:grid-cols-2"><label class="text-sm text-gray-400">From<input type="date" wire:model.live="from" class="mt-1 block w-full rounded-lg border-gray-700 bg-gray-800 text-white"></label><label class="text-sm text-gray-400">Until<input type="date" wire:model.live="until" class="mt-1 block w-full rounded-lg border-gray-700 bg-gray-800 text-white"></label></div></form>

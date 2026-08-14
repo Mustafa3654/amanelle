@@ -1,4 +1,7 @@
 <x-filament-panels::page>
+    @php($from = $this->from)
+    @php($until = $this->until)
+    @php($currency = $this->currency)
     @php($report = $this->getReport())
     @php($currencyLabel = $currency === 'all' ? 'All currencies' : $currency)
     <div class="report-shell space-y-6">

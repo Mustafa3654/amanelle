@@ -116,6 +116,15 @@ Route::get('/admin/orders/export-pdf', function () {
     ])->setPaper('a4', 'landscape')->download('amanelle-orders-'.now()->format('Y-m-d').'.pdf');
 })->name('admin.orders.pdf');
 
+Route::get('/admin/customers/export-pdf', function () {
+    abort_unless(auth()->check(), 403);
+    $page = app(\App\Filament\Pages\CustomersReport::class);
+
+    return \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.customers-pdf', [
+        'customers' => $page->getCustomers(),
+    ])->setPaper('a4', 'landscape')->download('amanelle-customers-'.now()->format('Y-m-d').'.pdf');
+})->name('admin.customers.pdf');
+
 Route::post('/contact', function (Request $request) {
     $data = $request->validate([
         'name' => ['required', 'string', 'max:120'],

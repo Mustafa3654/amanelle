@@ -2,12 +2,7 @@
     @php($report = $this->getReport())
     @php($currencyLabel = $currency === 'all' ? 'All currencies' : $currency)
     <div class="report-shell space-y-6">
-        <section class="report-hero overflow-hidden rounded-3xl p-6 shadow-xl sm:p-8">
-            <div class="relative z-10 flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
-                <div><div class="mb-4 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.25em] text-amber-200/80"><span class="h-2 w-2 rounded-full bg-amber-300"></span> Financial overview</div><h2 class="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Profit &amp; Loss</h2><p class="mt-2 max-w-xl text-sm text-white/65">A clear view of your delivered sales performance, product profitability, and operating margin.</p></div>
-                <div class="text-left lg:text-right"><div class="text-xs uppercase tracking-widest text-white/45">Reporting period</div><div class="mt-1 text-lg font-medium text-white">{{ \Carbon\Carbon::parse($from)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($until)->format('M d, Y') }}</div><div class="mt-1 text-xs text-amber-200/70">{{ $currencyLabel }}</div><div class="mt-4 flex gap-2 lg:justify-end"><x-filament::button wire:click="export" icon="heroicon-o-arrow-down-tray" size="sm">Export Excel</x-filament::button><a href="{{ route('admin.profit-loss.pdf', ['from' => $from, 'until' => $until, 'currency' => $currency]) }}" class="fi-btn fi-btn-size-sm fi-color-gray inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold"><x-filament::icon icon="heroicon-o-document-arrow-down" class="h-5 w-5" />Export PDF</a></div></div>
-            </div>
-        </section>
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 class="text-2xl font-semibold text-white">Profit &amp; Loss</h2><div class="mt-1 text-sm text-gray-400">{{ \Carbon\Carbon::parse($from)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($until)->format('M d, Y') }} · {{ $currencyLabel }}</div></div><div class="flex gap-2"><x-filament::button wire:click="export" icon="heroicon-o-arrow-down-tray" size="sm">Export CSV</x-filament::button><a href="{{ route('admin.profit-loss.pdf', ['from' => $from, 'until' => $until, 'currency' => $currency]) }}" class="fi-btn fi-btn-size-sm fi-color-gray inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold"><x-filament::icon icon="heroicon-o-document-arrow-down" class="h-5 w-5" />Export PDF</a></div></div>
 
         <form wire:submit="getReport" class="report-filters rounded-2xl p-4 sm:p-5"><div class="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-400">Filter report</div><div class="grid gap-4 md:grid-cols-3">{{ $this->form }}</div></form>
 

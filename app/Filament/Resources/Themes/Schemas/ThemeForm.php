@@ -17,7 +17,11 @@ class ThemeForm
     {
         return $schema->components([
             Section::make()->columns(2)->schema([
-                TextInput::make('name')->label(__('Name'))->required()->live(onBlur: true)->afterStateUpdated(fn ($state, $set) => blank($set('slug')) ? $set('slug', Str::slug($state)) : null),
+                TextInput::make('name')->label(__('Name'))->required()->live(onBlur: true)->afterStateUpdated(function ($state, $get, $set): void {
+                    if (blank($get('slug')) && filled($state)) {
+                        $set('slug', Str::slug($state));
+                    }
+                }),
                 TextInput::make('slug')->required()->unique(ignoreRecord: true),
                 Select::make('effect')->options(['none' => __('None'), 'snow' => __('Snow'), 'lanterns' => __('Lanterns'), 'sheep' => __('Sheep'), 'stars' => __('Stars'), 'confetti' => __('Confetti')])->default('none')->native(false),
                 Toggle::make('is_active')->label(__('Active theme'))->helperText(__('Activating this theme deactivates the previous theme.')),
